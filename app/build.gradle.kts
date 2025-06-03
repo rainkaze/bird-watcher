@@ -29,6 +29,10 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
+    buildFeatures{
+        viewBinding = true
+    }
 }
 
 dependencies {
@@ -37,6 +41,22 @@ dependencies {
     implementation(libs.material)
     implementation(libs.activity)
     implementation(libs.constraintlayout)
+
+
+    implementation(libs.flexbox)
+    implementation(libs.okhttp)
+    implementation(libs.gson)
+    implementation(libs.cardview)
+
+    implementation(libs.glide)
+    annotationProcessor(libs.glide)
+
+    // Lombok依赖声明
+    compileOnly(libs.lombok)
+    annotationProcessor(libs.lombok)
+
+
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
