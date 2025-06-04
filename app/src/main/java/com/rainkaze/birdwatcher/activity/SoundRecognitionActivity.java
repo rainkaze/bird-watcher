@@ -124,7 +124,7 @@ public class SoundRecognitionActivity extends AppCompatActivity {
     }
 
     private void setupRecyclerView() {
-        resultAdapter = new RecognitionResultAdapter(new ArrayList<>());
+        resultAdapter = new RecognitionResultAdapter(this, new ArrayList<>());
         binding.recyclerViewSoundResults.setLayoutManager(new LinearLayoutManager(this));
         binding.recyclerViewSoundResults.setAdapter(resultAdapter);
     }

@@ -63,7 +63,7 @@ public class ImageRecognitionActivity extends AppCompatActivity {
     }
 
     private void setupRecyclerView() {
-        resultAdapter = new RecognitionResultAdapter(new ArrayList<>());
+        resultAdapter = new RecognitionResultAdapter(this, new ArrayList<>());
         binding.recyclerViewImageResults.setLayoutManager(new LinearLayoutManager(this));
         binding.recyclerViewImageResults.setAdapter(resultAdapter);
     }

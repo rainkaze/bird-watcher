@@ -76,12 +76,18 @@ public class BirdIdentificationService {
                     }
 
                     String details = null;
-                    if (baiduResult.getBaikeInfo() != null && baiduResult.getBaikeInfo().getDescription() != null) {
-                        details = baiduResult.getBaikeInfo().getDescription();
-                        // 你也可以将 baike_url 和 image_url 拼接到details或 RecognitionResult 的新字段
-                        // details += "\n百科链接: " + baiduResult.getBaikeInfo().getBaikeUrl();
+                    // 修改开始
+                    String baikeLink = null;
+                    if (baiduResult.getBaikeInfo() != null) {
+                        if (baiduResult.getBaikeInfo().getDescription() != null) {
+                            details = baiduResult.getBaikeInfo().getDescription();
+                        }
+                        if (baiduResult.getBaikeInfo().getBaikeUrl() != null) {
+                            baikeLink = baiduResult.getBaikeInfo().getBaikeUrl();
+                        }
                     }
-                    recognitionResults.add(new RecognitionResult(baiduResult.getName(), score, details));
+                    recognitionResults.add(new RecognitionResult(baiduResult.getName(), score, details, baikeLink));
+                    // 修改结束
                 }
                 mainThreadHandler.post(() -> callback.onSuccess(recognitionResults));
 
