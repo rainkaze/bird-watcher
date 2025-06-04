@@ -1,24 +1,96 @@
 package com.rainkaze.birdwatcher;
 
 import android.os.Bundle;
+import android.view.MenuItem;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
+
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.navigation.NavigationBarView;
+import com.rainkaze.birdwatcher.fragment.HomeFragment;
+import com.rainkaze.birdwatcher.fragment.IdentifyFragment;
+import com.rainkaze.birdwatcher.fragment.KnowledgeFragment;
+import com.rainkaze.birdwatcher.fragment.MapFragment;
+import com.rainkaze.birdwatcher.fragment.RecordFragment;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
+
+    List<Fragment> list;
+    BottomNavigationView bottomNavigationView;
+    Toolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
+
+        toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        bottomNavigationView = findViewById(R.id.bottom_navigation);
+
+        list = new ArrayList<>();
+        list.add(new HomeFragment());
+        list.add(new MapFragment());
+        list.add(new IdentifyFragment());
+        list.add(new RecordFragment());
+        list.add(new KnowledgeFragment());
+
+
+        if (savedInstanceState == null) {
+            bottomNavigationView.setSelectedItemId(R.id.navigation_home);
+        }
+
+
+        if (bottomNavigationView != null) {
+            bottomNavigationView.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
+                @Override
+                public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                    Fragment selectedFragment = null;
+                    int itemId = item.getItemId();
+                    if (itemId == R.id.navigation_home) {
+                        selectedFragment = list.get(0);
+                    } else if (itemId == R.id.navigation_map) {
+                        selectedFragment = list.get(1);
+                    } else if (itemId == R.id.navigation_identify) {
+                        selectedFragment = list.get(2);
+                    }else if (itemId == R.id.navigation_record) {
+                        selectedFragment = list.get(3);
+                    }else if (itemId == R.id.navigation_knowledge) {
+                        selectedFragment = list.get(4);
+                    }
+
+                    if (selectedFragment != null) {
+                        showFragment(selectedFragment);
+                    }
+                    return true;
+                }
+            });
+
+        }
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            Insets systemBarInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBarInsets.left, systemBarInsets.top, systemBarInsets.right, 0);
             return insets;
         });
+    }
+
+    private void showFragment(Fragment fragment) {
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ft.replace(R.id.fragment_container, fragment);
+        ft.commit();
     }
 }
