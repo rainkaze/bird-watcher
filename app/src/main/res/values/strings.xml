@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">BirdWatcher</string>
+    <string name="search_location">搜索位置</string>
+    <string name="search_birds">搜索鸟类</string>
+    <string name="searching_birds">鸟类搜索模式</string>
+    <string name="search">搜索</string>
+    <string name="bird_icon">鸟类图标</string>
+    <string name="locate_bird">定位到鸟类位置</string>
 </resources>

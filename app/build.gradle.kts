@@ -49,6 +49,7 @@ dependencies {
     implementation(libs.cardview)
 
     implementation(libs.glide)
+    implementation(libs.play.services.maps)
     annotationProcessor(libs.glide)
 
     // Lombok依赖声明
@@ -60,4 +61,20 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
+    //baidumap依赖
+
+//    implementation(libs.baidumap.map)
+//    implementation(libs.baidumap.search)
+//    implementation(libs.baidumap.util)
+//    implementation("com.baidu.mapapi:map:7.5.0")
+//    implementation("com.baidu.mapapi:search:7.5.0")
+//    implementation("com.baidu.mapapi:util:7.5.0")
+ //   implementation("com.baidu.android:map-sdk:5.5.1")
+   // implementation(libs.baidumap.location)
+    implementation ("com.baidu.lbsyun:BaiduMapSDK_Map:7.5.0") // 检查官网更新版本
+    // 百度地图检索功能（用于地理编码）
+    implementation("com.baidu.lbsyun:BaiduMapSDK_Search:7.5.0")
+    // 百度地图工具库
+    implementation("com.baidu.lbsyun:BaiduMapSDK_Util:7.5.0")
+    implementation("com.baidu.lbsyun:BaiduMapSDK_Location:7.5.0")
 }
