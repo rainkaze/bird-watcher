@@ -8,6 +8,10 @@ material = "1.12.0"
 activity = "1.8.0"
 constraintlayout = "2.1.4"
 
+# 修改百度地图版本声明方式
+baidumap-map = "7.5.0"
+baidumap-search = "7.5.0"
+baidumap-util = "7.5.0"
 
 flexbox = "3.0.0"
 okhttp = "4.12.0"
@@ -15,6 +19,7 @@ gson = "2.10.1"
 cardview = "1.0.0"
 lombok = "1.18.32"
 glide = "4.16.0"
+playServicesMaps = "19.2.0"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -32,7 +37,12 @@ cardview = { group  = "androidx.cardview", name = "cardview", version.ref = "car
 lombok = { group  = "org.projectlombok", name = "lombok", version.ref = "lombok" }
 glide = { group  = "com.github.bumptech.glide", name = "glide", version.ref = "glide" }
 
+# 修正百度地图依赖声明
+baidumap-map = { module = "com.baidu.mapapi:map", version.ref = "baidumap-map" }
+baidumap-search = { module = "com.baidu.mapapi:search", version.ref = "baidumap-search" }
+baidumap-util = { module = "com.baidu.mapapi:util", version.ref = "baidumap-util" }
+
+play-services-maps = { group = "com.google.android.gms", name = "play-services-maps", version.ref = "playServicesMaps" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
-

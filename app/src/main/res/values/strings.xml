@@ -9,4 +9,12 @@
     <string name="message_loading_results">正在努力识别中…</string>
 
     <string name="label_confidence_score_formatted">置信度: %1$.2f</string>
+    <string name="search_location">搜索位置</string>
+    <string name="search_birds">搜索鸟类</string>
+    <string name="searching_birds">鸟类搜索模式</string>
+    <string name="search">搜索</string>
+    <string name="bird_icon">鸟类图标</string>
+    <string name="locate_bird">定位到鸟类位置</string>
+    <string name="locate_me">定位到我的位置</string>
+    <string name="location_permission_required">需要位置权限才能使用定位功能</string>
 </resources>

@@ -12,7 +12,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
-
+import com.baidu.mapapi.SDKInitializer;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
 import com.rainkaze.birdwatcher.R;
@@ -21,7 +21,7 @@ import com.rainkaze.birdwatcher.fragment.IdentifyFragment;
 import com.rainkaze.birdwatcher.fragment.KnowledgeFragment;
 import com.rainkaze.birdwatcher.fragment.MapFragment;
 import com.rainkaze.birdwatcher.fragment.RecordFragment;
-
+import com.baidu.mapapi.SDKInitializer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,16 +29,28 @@ public class MainActivity extends AppCompatActivity {
 
     List<Fragment> list;
     BottomNavigationView bottomNavigationView;
-    Toolbar toolbar;
-
+    private boolean isMapInitialized = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         EdgeToEdge.enable(this);
+
+        try {
+            // 设置隐私协议同意状态
+            SDKInitializer.setAgreePrivacy(getApplicationContext(), true);
+
+            // 移除 isInitialized() 检查，直接初始化
+            com.baidu.mapapi.SDKInitializer.initialize(getApplicationContext());
+            isMapInitialized = true; // 标记已初始化
+        } catch (Exception e) {
+            e.printStackTrace();
+            isMapInitialized = false; // 标记初始化失败
+        }
+
+
         setContentView(R.layout.activity_main);
 
-//        toolbar = findViewById(R.id.toolbar);
-//        setSupportActionBar(toolbar);
 
         bottomNavigationView = findViewById(R.id.bottom_navigation);
 
