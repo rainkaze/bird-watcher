@@ -59,6 +59,16 @@
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" /> </provider>
+
+
+        <activity
+            android:name=".activity.AddEditRecordActivity"
+            android:label="记录详情"
+            android:parentActivityName=".activity.MainActivity" android:windowSoftInputMode="adjustResize">
+            <meta-data
+            android:name="android.support.PARENT_ACTIVITY"
+            android:value=".activity.MainActivity" />
+        </activity>
     </application>
 
 </manifest>
