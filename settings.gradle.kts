@@ -16,6 +16,8 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        // 添加百度地图仓库
+     // maven { url "https://mapapi.bj.bcebos.com/release/maven" }
     }
 }
 
