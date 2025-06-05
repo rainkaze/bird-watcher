@@ -20,6 +20,7 @@ cardview = "1.0.0"
 lombok = "1.18.32"
 glide = "4.16.0"
 playServicesMaps = "19.2.0"
+swiperefreshlayout = "1.1.0"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -43,6 +44,7 @@ baidumap-search = { module = "com.baidu.mapapi:search", version.ref = "baidumap-
 baidumap-util = { module = "com.baidu.mapapi:util", version.ref = "baidumap-util" }
 
 play-services-maps = { group = "com.google.android.gms", name = "play-services-maps", version.ref = "playServicesMaps" }
+swiperefreshlayout = { group = "androidx.swiperefreshlayout", name = "swiperefreshlayout", version.ref = "swiperefreshlayout" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

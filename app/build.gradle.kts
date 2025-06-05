@@ -50,6 +50,7 @@ dependencies {
 
     implementation(libs.glide)
     implementation(libs.play.services.maps)
+    implementation(libs.swiperefreshlayout)
     annotationProcessor(libs.glide)
 
     // Lombok依赖声明
@@ -78,4 +79,30 @@ dependencies {
     implementation("com.baidu.lbsyun:BaiduMapSDK_Util:7.5.0")
 
     implementation("com.baidu.lbsyun:BaiduMapSDK_Location:9.4.0")
+    // Retrofit
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.okhttp3:okhttp:4.9.3")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.9.3")
+// Material Design 组件
+    implementation("com.google.android.material:material:1.9.0")
+
+// RecyclerView
+    implementation("androidx.recyclerview:recyclerview:1.3.0")
+
+// Retrofit网络请求库
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation ("de.hdodenhof:circleimageview:3.1.0")
+// Retrofit的GSON转换器
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+
+// Glide图片加载库
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+
+// Glide编译器（用于注解处理）
+    annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
+    // 图片加载
+    implementation("com.github.bumptech.glide:glide:4.14.2")
+    annotationProcessor("com.github.bumptech.glide:compiler:4.14.2")
+
 }
