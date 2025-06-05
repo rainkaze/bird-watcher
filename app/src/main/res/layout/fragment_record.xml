@@ -4,26 +4,61 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
     tools:context=".fragment.RecordFragment">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_records"
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appbar_record"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar_record"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            app:title="我的观鸟记录"
+            app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
+
+            <androidx.appcompat.widget.SearchView
+                android:id="@+id/search_view_records"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:iconifiedByDefault="true"
+                app:queryHint="搜索记录..."
+                android:theme="@style/ThemeOverlay.AppCompat.Light" />
+        </androidx.appcompat.widget.Toolbar>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="8dp"
-        android:clipToPadding="false"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        tools:listitem="@layout/item_record" />
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-    <TextView
-        android:id="@+id/tv_empty_records"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="还没有任何记录，点击右下角按钮添加吧！"
-        android:textSize="16sp"
-        android:visibility="gone"
-        android:layout_gravity="center"
-        tools:visibility="visible"/>
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_records"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:clipToPadding="false"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            tools:listitem="@layout/item_record" />
+
+        <TextView
+            android:id="@+id/tv_empty_records"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="还没有任何记录，点击右下角按钮添加吧！"
+            android:textAppearance="?attr/textAppearanceBodyLarge"
+            android:textColor="?android:attr/textColorSecondary"
+            android:visibility="gone"
+            android:layout_centerInParent="true"
+            android:padding="16dp"
+            android:gravity="center"
+            tools:visibility="visible"/>
+    </RelativeLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_add_record"
@@ -31,6 +66,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
-        app:srcCompat="@android:drawable/ic_input_add"
-        android:contentDescription="添加记录" />
+        app:srcCompat="@drawable/ic_bird"
+        android:contentDescription="添加记录"
+        app:tint="@android:color/white"/>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

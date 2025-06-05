@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
     tools:context=".activity.AddEditRecordActivity">
 
     <com.google.android.material.appbar.AppBarLayout
@@ -51,7 +52,7 @@
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="12dp"
                 android:hint="鸟名*">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -66,8 +67,8 @@
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:hint="学名">
+                android:layout_marginTop="12dp"
+                android:hint="学名 (可选)">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/et_scientific_name"
@@ -81,8 +82,8 @@
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:hint="详细内容/观察描述">
+                android:layout_marginTop="12dp"
+                android:hint="详细内容/观察描述 (可选)">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/et_content"
@@ -90,31 +91,44 @@
                     android:layout_height="wrap_content"
                     android:gravity="top"
                     android:inputType="textMultiLine"
-                    android:minLines="3" />
+                    android:minLines="4"
+                    android:maxLines="8"/>
             </com.google.android.material.textfield.TextInputLayout>
+
+            <TextView
+                android:id="@+id/tv_date_info"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:textAppearance="?attr/textAppearanceBodyMedium"
+                tools:text="记录日期: 2024-05-20 10:30" />
+
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:text="地点信息"
-                android:textAppearance="?attr/textAppearanceSubtitle1"/>
+                android:layout_marginTop="20dp"
+                android:text="地点信息 (可选)"
+                android:textAppearance="?attr/textAppearanceTitleSmall"/>
 
             <Button
                 android:id="@+id/btn_get_location"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton.Icon"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:text="获取当前位置"
-                app:icon="@android:drawable/ic_menu_mylocation" />
-            <TextView
-                android:id="@+id/tv_location_info"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="经度: 未获取, 纬度: 未获取"
-                android:textSize="14sp"/>
+                app:icon="@drawable/ic_my_location" /> <TextView
+            android:id="@+id/tv_location_info"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:text="经纬度: 未获取"
+            android:textSize="14sp"/>
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/til_detailed_location"
@@ -122,7 +136,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:hint="详细地点描述">
+                android:hint="详细地点描述 (可选)">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/et_detailed_location"
@@ -137,33 +151,34 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:text="照片 (可选)"
-                android:textAppearance="?attr/textAppearanceSubtitle1"/>
+                android:textAppearance="?attr/textAppearanceTitleSmall"/>
 
             <Button
                 android:id="@+id/btn_add_photos"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton.Icon"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:text="选择照片"
-                app:icon="@android:drawable/ic_menu_gallery" />
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rv_photos_preview"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:orientation="horizontal"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                tools:layoutManager="LinearLayoutManager"
-                tools:orientation="horizontal"
-                tools:listitem="@layout/item_photo_preview"
-                android:minHeight="80dp"/>
+                app:icon="@drawable/ic_add_a_photo" /> <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_photos_preview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            tools:listitem="@layout/item_photo_preview_with_remove"
+            android:minHeight="100dp"
+            android:visibility="gone"
+            tools:visibility="visible"
+            tools:itemCount="3"/>
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:text="音频记录 (可选)"
-                android:textAppearance="?attr/textAppearanceSubtitle1"/>
+                android:textAppearance="?attr/textAppearanceTitleSmall"/>
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -172,29 +187,28 @@
                 android:layout_marginTop="8dp"
                 android:gravity="center_vertical">
 
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_record_audio"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton.Icon"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="开始录音"
-                    app:icon="@android:drawable/ic_btn_speak_now" />
-                <TextView
-                    android:id="@+id/tv_audio_file_name"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:text="未选择音频"
-                    android:ellipsize="middle"
-                    android:singleLine="true"/>
+                    app:icon="@drawable/ic_mic_record" /> <TextView
+                android:id="@+id/tv_audio_file_name"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:ellipsize="middle"
+                android:singleLine="true"
+                tools:text="my_bird_song_recording_final_version.mp3"/>
 
                 <ImageButton
                     android:id="@+id/btn_play_audio"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:src="@android:drawable/ic_media_play"
-                    android:visibility="gone"
+                    android:visibility="gone" tools:visibility="visible"
                     android:contentDescription="播放音频"
                     style="?android:attr/borderlessButtonStyle"/>
 
@@ -203,10 +217,13 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:src="@android:drawable/ic_menu_close_clear_cancel"
-                    android:visibility="gone"
+                    android:visibility="gone" tools:visibility="visible"
                     android:contentDescription="删除音频"
                     style="?android:attr/borderlessButtonStyle"/>
             </LinearLayout>
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="32dp"/>
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
