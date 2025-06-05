@@ -76,5 +76,6 @@ dependencies {
     implementation("com.baidu.lbsyun:BaiduMapSDK_Search:7.5.0")
     // 百度地图工具库
     implementation("com.baidu.lbsyun:BaiduMapSDK_Util:7.5.0")
-    implementation("com.baidu.lbsyun:BaiduMapSDK_Location:7.5.0")
+
+    implementation("com.baidu.lbsyun:BaiduMapSDK_Location:9.4.0")
 }
