@@ -1,4 +1,4 @@
-package com.rainkaze.birdwatcher;
+package com.rainkaze.birdwatcher.activity;
 
 import android.os.Bundle;
 import android.view.MenuItem;
@@ -15,6 +15,7 @@ import androidx.fragment.app.FragmentTransaction;
 import com.baidu.mapapi.SDKInitializer;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
+import com.rainkaze.birdwatcher.R;
 import com.rainkaze.birdwatcher.fragment.HomeFragment;
 import com.rainkaze.birdwatcher.fragment.IdentifyFragment;
 import com.rainkaze.birdwatcher.fragment.KnowledgeFragment;
