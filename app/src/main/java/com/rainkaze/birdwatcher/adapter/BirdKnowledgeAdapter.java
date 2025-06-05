@@ -48,12 +48,21 @@ public class BirdKnowledgeAdapter extends RecyclerView.Adapter<BirdKnowledgeAdap
         Bird bird = birdList.get(position);
         holder.tvBirdName.setText(bird.getCommonName());
         holder.tvScientificName.setText(bird.getScientificName());
-        // 加载图片（使用Glide）
-        Glide.with(context)
-                .load(bird.getImageResId()) // 或从API获取的图片URL
-                .placeholder(R.drawable.ic_bird_placeholder)
-                .error(R.drawable.ic_bird_error)
-                .into(holder.ivBirdImage);
+
+        // 修复：使用图片 URL 而不是资源 ID
+        String imageUrl = bird.getImageUrl();
+        if (imageUrl != null && !imageUrl.isEmpty()) {
+            Glide.with(context)
+                    .load(imageUrl)
+                    .placeholder(R.drawable.ic_bird_placeholder)
+                    .error(R.drawable.ic_bird_error)
+                    .into(holder.ivBirdImage);
+        } else {
+            // 如果没有图片 URL，使用占位符
+            Glide.with(context)
+                    .load(R.drawable.ic_bird_placeholder)
+                    .into(holder.ivBirdImage);
+        }
 
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) {
@@ -67,7 +76,7 @@ public class BirdKnowledgeAdapter extends RecyclerView.Adapter<BirdKnowledgeAdap
         return birdList.size();
     }
 
-    public class BirdViewHolder extends RecyclerView.ViewHolder {
+    public static class BirdViewHolder extends RecyclerView.ViewHolder {
         ImageView ivBirdImage;
         TextView tvBirdName;
         TextView tvScientificName;

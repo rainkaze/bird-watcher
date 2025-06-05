@@ -22,6 +22,7 @@ import com.google.android.material.search.SearchView;
 import com.rainkaze.birdwatcher.R;
 import com.rainkaze.birdwatcher.adapter.BirdKnowledgeAdapter;
 import com.rainkaze.birdwatcher.model.Bird;
+import com.rainkaze.birdwatcher.model.BirdMedia;
 import com.rainkaze.birdwatcher.network.BirdApiService;
 import com.rainkaze.birdwatcher.network.RetrofitClient;
 
@@ -137,7 +138,6 @@ public class KnowledgeFragment extends Fragment {
         swipeRefreshLayout.setOnRefreshListener(() -> {
             swipeRefreshLayout.setRefreshing(true);
             loadBirdData();
-            // 注意：网络请求完成后才停止刷新
         });
     }
 
@@ -150,6 +150,12 @@ public class KnowledgeFragment extends Fragment {
                         swipeRefreshLayout.setRefreshing(false);
                         if (response.isSuccessful() && response.body() != null) {
                             allBirds = response.body();
+
+                            // 为每个鸟类加载图片
+                            for (Bird bird : allBirds) {
+                                loadBirdImage(bird);
+                            }
+
                             showAllBirds();
                         } else {
                             showToast("获取鸟类数据失败: " + response.message());
@@ -160,6 +166,29 @@ public class KnowledgeFragment extends Fragment {
                     public void onFailure(Call<List<Bird>> call, Throwable t) {
                         swipeRefreshLayout.setRefreshing(false);
                         showToast("网络错误: " + t.getMessage());
+                    }
+                });
+    }
+
+    // 为单个鸟类加载图片
+    private void loadBirdImage(Bird bird) {
+        BirdApiService apiService = RetrofitClient.getApiService();
+        apiService.getBirdMedia(bird.getSpeciesCode(), "json", "zh", 1)
+                .enqueue(new Callback<List<BirdMedia>>() {
+                    @Override
+                    public void onResponse(Call<List<BirdMedia>> call, Response<List<BirdMedia>> response) {
+                        if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+                            BirdMedia media = response.body().get(0);
+                            bird.setImageUrl(media.getContentUrl());
+
+                            // 更新适配器
+                            birdAdapter.notifyDataSetChanged();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<List<BirdMedia>> call, Throwable t) {
+                        // 不显示错误，使用默认占位符
                     }
                 });
     }

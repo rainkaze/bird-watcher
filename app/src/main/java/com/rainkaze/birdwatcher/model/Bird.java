@@ -67,10 +67,18 @@ public class Bird implements Serializable {
     @SerializedName("exoticCategory")
     private String exoticCategory;
 
+    private String imageUrl;
     // 构造函数和Getter/Setter方法
     public Bird() {}
 
     // Getters
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
     public String getSpeciesCode() { return speciesCode; }
     public String getCommonName() { return commonName; }
     public String getScientificName() { return scientificName; }
