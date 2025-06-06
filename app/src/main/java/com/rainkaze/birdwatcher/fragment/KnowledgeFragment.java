@@ -173,7 +173,10 @@ public class KnowledgeFragment extends Fragment {
     // 为单个鸟类加载图片
     private void loadBirdImage(Bird bird) {
         BirdApiService apiService = RetrofitClient.getApiService();
-        apiService.getBirdMedia(bird.getSpeciesCode(), "json", "zh", 1)
+        apiService.getBirdMedia(        DEFAULT_REGION,  // 传递国家代码（例如 "CN"）
+                        "json",
+                        "zh",
+                        1)
                 .enqueue(new Callback<List<BirdMedia>>() {
                     @Override
                     public void onResponse(Call<List<BirdMedia>> call, Response<List<BirdMedia>> response) {

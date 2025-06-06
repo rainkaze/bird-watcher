@@ -44,7 +44,7 @@ public interface BirdApiService {
     // 获取鸟类图片
     @GET("ref/region/list/subnational1/{countryCode}")
     Call<List<BirdMedia>> getBirdMedia(
-            @Path("speciesCode") String speciesCode,
+            @Path("countryCode") String countryCode,
             @Query("fmt") String format,
             @Query("locale") String locale,
             @Query("maxResults") int maxResults

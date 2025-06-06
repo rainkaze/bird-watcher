@@ -89,8 +89,8 @@ public class RecordFragment extends Fragment implements RecordAdapter.OnItemClic
         if (recordList.isEmpty()) { // 简单防止重复添加示例数据
             recordList.add(new BirdRecord("公园的喜鹊", "喜鹊", "今天在公园看到一群喜鹊，非常活泼。", new Date()));
             BirdRecord br2 = new BirdRecord("清晨的麻雀", "麻雀", "窗台上的常客。", new Date(System.currentTimeMillis() - 1000 * 60 * 60 * 24)); // 昨天
-            br2.setDetailedLocation("我家窗台");
-            br2.setScientificName("Passer montanus");
+           // br2.setDetailedLocation("我家窗台");
+       //     br2.setScientificName("Passer montanus");
             recordList.add(br2);
         }
         // recordList.add(new BirdRecord(...)); // 可以添加更多
@@ -113,9 +113,9 @@ public class RecordFragment extends Fragment implements RecordAdapter.OnItemClic
     @Override
     public void onItemClick(BirdRecord record) {
         // TODO: 点击列表项，可以跳转到记录详情页或编辑页
-        Toast.makeText(getContext(), "点击了: " + record.getTitle(), Toast.LENGTH_SHORT).show();
+      //  Toast.makeText(getContext(), "点击了: " + record.getTitle(), Toast.LENGTH_SHORT).show();
         Intent intent = new Intent(getActivity(), AddEditRecordActivity.class);
-        intent.putExtra(AddEditRecordActivity.EXTRA_RECORD_ID, record.getId()); // 假设 getId() 返回唯一ID
+      //  intent.putExtra(AddEditRecordActivity.EXTRA_RECORD_ID, record.getId()); // 假设 getId() 返回唯一ID
         addEditRecordLauncher.launch(intent);
     }
 
@@ -139,7 +139,7 @@ public class RecordFragment extends Fragment implements RecordAdapter.OnItemClic
                 //    })
                 //    .setNegativeButton("取消", null)
                 //    .show();
-                Toast.makeText(getContext(), "删除功能待实现: " + record.getTitle(), Toast.LENGTH_SHORT).show();
+            //    Toast.makeText(getContext(), "删除功能待实现: " + record.getTitle(), Toast.LENGTH_SHORT).show();
                 return true;
             }
             return false;
