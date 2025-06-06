@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.rainkaze.birdwatcher.R;
+
 import com.rainkaze.birdwatcher.model.BirdRecord;
 
 import java.text.SimpleDateFormat;
@@ -77,7 +78,7 @@ public class RecordAdapter extends RecyclerView.Adapter<RecordAdapter.RecordView
             tvDateLocation = itemView.findViewById(R.id.tv_record_date_location);
         }
 
-//        void bind(final BirdRecord record, final OnItemClickListener listener) {
+        void bind(final BirdRecord record, final OnItemClickListener listener) {
 //            tvTitle.setText(record.getTitle());
 //
 //            String birdNameText = record.getBirdName() != null ? record.getBirdName() : "未知鸟类";
@@ -105,13 +106,13 @@ public class RecordAdapter extends RecyclerView.Adapter<RecordAdapter.RecordView
 //            } else {
 //                ivThumbnail.setImageResource(R.mipmap.ic_launcher_round); // 默认或占位图
 //            }
-//
-//
-//            itemView.setOnClickListener(v -> listener.onItemClick(record));
-//            itemView.setOnLongClickListener(v -> {
-//                listener.onItemLongClick(record, v);
-//                return true;
-//            });
-//        }
+
+
+            itemView.setOnClickListener(v -> listener.onItemClick(record));
+            itemView.setOnLongClickListener(v -> {
+                listener.onItemLongClick(record, v);
+                return true;
+            });
+        }
     }
 }

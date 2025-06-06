@@ -16,7 +16,9 @@ import com.rainkaze.birdwatcher.model.Bird;
 
 import java.util.List;
 
-public class BirdKnowledgeAdapter extends RecyclerView.Adapter<BirdKnowledgeAdapter.BirdViewHolder> {
+public class BirdKnowledgeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+    private static final int TYPE_EMPTY = 0;
+    private static final int TYPE_BIRD = 1;
 
     private Context context;
     private List<Bird> birdList;
@@ -37,43 +39,67 @@ public class BirdKnowledgeAdapter extends RecyclerView.Adapter<BirdKnowledgeAdap
 
     @NonNull
     @Override
-    public BirdViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         context = parent.getContext();
-        View view = LayoutInflater.from(context).inflate(R.layout.item_bird_knowledge, parent, false);
-        return new BirdViewHolder(view);
+        LayoutInflater inflater = LayoutInflater.from(context);
+
+        if (viewType == TYPE_EMPTY) {
+            View view = inflater.inflate(R.layout.item_empty_state, parent, false);
+            return new EmptyViewHolder(view);
+        } else {
+            View view = inflater.inflate(R.layout.item_bird_knowledge, parent, false);
+            return new BirdViewHolder(view);
+        }
     }
 
     @Override
-    public void onBindViewHolder(@NonNull BirdViewHolder holder, int position) {
-        Bird bird = birdList.get(position);
-        holder.tvBirdName.setText(bird.getCommonName());
-        holder.tvScientificName.setText(bird.getScientificName());
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+        if (holder.getItemViewType() == TYPE_EMPTY) {
+            // 空视图不需要绑定数据
+            return;
+        }
 
-        // 修复：使用图片 URL 而不是资源 ID
+        BirdViewHolder birdHolder = (BirdViewHolder) holder;
+        Bird bird = birdList.get(position);
+        birdHolder.tvBirdName.setText(bird.getCommonName());
+        birdHolder.tvScientificName.setText(bird.getScientificName());
+
+        // 加载图片
         String imageUrl = bird.getImageUrl();
         if (imageUrl != null && !imageUrl.isEmpty()) {
             Glide.with(context)
                     .load(imageUrl)
                     .placeholder(R.drawable.ic_bird_placeholder)
                     .error(R.drawable.ic_bird_error)
-                    .into(holder.ivBirdImage);
+                    .into(birdHolder.ivBirdImage);
         } else {
-            // 如果没有图片 URL，使用占位符
             Glide.with(context)
                     .load(R.drawable.ic_bird_placeholder)
-                    .into(holder.ivBirdImage);
+                    .into(birdHolder.ivBirdImage);
         }
 
-        holder.itemView.setOnClickListener(v -> {
+        birdHolder.itemView.setOnClickListener(v -> {
             if (listener != null) {
                 listener.onBirdItemClick(bird);
             }
         });
     }
 
+    // 空状态ViewHolder
+    static class EmptyViewHolder extends RecyclerView.ViewHolder {
+        public EmptyViewHolder(@NonNull View itemView) {
+            super(itemView);
+        }
+    }
+
     @Override
     public int getItemCount() {
-        return birdList.size();
+        return birdList.isEmpty() ? 1 : birdList.size();
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return birdList.isEmpty() ? TYPE_EMPTY : TYPE_BIRD;
     }
 
     public static class BirdViewHolder extends RecyclerView.ViewHolder {

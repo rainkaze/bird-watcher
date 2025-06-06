@@ -18,7 +18,8 @@ import retrofit2.http.Query;
 
 public class RetrofitClient {
     private static final String BASE_URL = "https://api.ebird.org/v2/";
-    private static final String API_KEY = "t06v1tgsisl"; // 替换为你的API密钥
+    // 请替换为你自己有效的API密钥
+    private static final String API_KEY = "t06v1tgsisl";
 
     private static Retrofit retrofit = null;
 
@@ -48,4 +49,3 @@ public class RetrofitClient {
         return getClient().create(BirdApiService.class);
     }
 }
-

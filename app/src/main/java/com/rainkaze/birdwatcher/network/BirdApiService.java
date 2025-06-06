@@ -34,17 +34,18 @@ public interface BirdApiService {
             @Query("fmt") String format
     );
 
-    // 搜索鸟类
-    @GET("ref/taxon/find/{query}")
+    // 搜索鸟类 (已修正：使用 @Query("q") 注解)
+    @GET("ref/taxon/find")
     Call<List<Bird>> searchBirds(
-            @Path("query") String query,
+            @Query("q") String query,
             @Query("locale") String locale
     );
 
-    // 获取鸟类图片
-    @GET("ref/region/list/subnational1/{countryCode}")
+    // 获取鸟类图片 (已修正：使用正确的端点和参数)
+    @GET("ref/media/find")
     Call<List<BirdMedia>> getBirdMedia(
-            @Path("countryCode") String countryCode,
+            @Query("speciesCode") String speciesCode,
+            @Query("mediaType") String mediaType,
             @Query("fmt") String format,
             @Query("locale") String locale,
             @Query("maxResults") int maxResults
