@@ -1,7 +1,12 @@
 package com.rainkaze.birdwatcher.fragment;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -10,14 +15,13 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -37,12 +41,24 @@ import com.baidu.mapapi.map.MapStatusUpdateFactory;
 import com.baidu.mapapi.map.MapView;
 import com.baidu.mapapi.map.Marker;
 import com.baidu.mapapi.map.MarkerOptions;
-import com.baidu.mapapi.map.MyLocationConfiguration;
 import com.baidu.mapapi.map.MyLocationData;
 import com.baidu.mapapi.model.LatLng;
 import com.baidu.mapapi.model.LatLngBounds;
+import com.baidu.mapapi.search.core.PoiInfo;
+import com.baidu.mapapi.search.core.SearchResult;
+import com.baidu.mapapi.search.poi.OnGetPoiSearchResultListener;
+import com.baidu.mapapi.search.poi.PoiCitySearchOption;
+import com.baidu.mapapi.search.poi.PoiDetailResult;
+import com.baidu.mapapi.search.poi.PoiDetailSearchResult;
+import com.baidu.mapapi.search.poi.PoiIndoorResult;
+import com.baidu.mapapi.search.poi.PoiResult;
+import com.baidu.mapapi.search.poi.PoiSearch;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.CustomTarget;
+import com.bumptech.glide.request.transition.Transition;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.rainkaze.birdwatcher.R;
+import com.rainkaze.birdwatcher.adapter.PoiResultAdapter;
 import com.rainkaze.birdwatcher.adapter.RecordSearchAdapter;
 import com.rainkaze.birdwatcher.db.BirdRecordDao;
 import com.rainkaze.birdwatcher.model.BirdRecord;
@@ -53,32 +69,32 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
-public class MapFragment extends Fragment {
+public class MapFragment extends Fragment implements OnGetPoiSearchResultListener, BaiduMap.OnMapLoadedCallback {
 
     private static final String TAG = "MapFragment";
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
 
-    // --- 地图和UI组件 ---
+    private enum SearchMode { RECORDS, LOCATION }
+    private SearchMode currentSearchMode = SearchMode.RECORDS;
+
     private MapView mMapView;
     private BaiduMap mBaiduMap;
     private FloatingActionButton btnMyLocation;
     private SearchView searchView;
+    private ImageView ivSearchModeToggle;
     private RecyclerView rvSearchResults;
     private InfoWindow mInfoWindow;
 
-    // --- 数据和适配器 ---
     private BirdRecordDao birdRecordDao;
-    private RecordSearchAdapter searchAdapter;
-    private List<BirdRecord> allRecordsWithLocation = new ArrayList<>(); // 存储所有带坐标的记录
-    private List<BirdRecord> displayedRecords = new ArrayList<>(); // 当前显示在地图和列表中的记录
+    private List<BirdRecord> allRecordsWithLocation = new ArrayList<>();
+    private List<BirdRecord> displayedRecords = new ArrayList<>();
+    private RecordSearchAdapter recordSearchAdapter;
+    private PoiResultAdapter poiResultAdapter;
+    private List<PoiInfo> poiResultsList = new ArrayList<>();
 
-    // --- 地图标记和图标 ---
-    private BitmapDescriptor recordMarkerIcon;
-
-    // --- 定位相关 ---
+    private PoiSearch mPoiSearch;
     private LocationClient mLocationClient;
     private boolean isFirstLocate = true;
-    private boolean hasLocationPermission = false;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
 
@@ -86,8 +102,8 @@ public class MapFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // 初始化DAO
         birdRecordDao = new BirdRecordDao(requireContext());
+        mPoiSearch = PoiSearch.newInstance();
     }
 
     @Override
@@ -103,61 +119,51 @@ public class MapFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        // 视图创建后加载数据
-        loadRecordsForMap();
+        updateSearchUI();
     }
 
     private void initViews(View view) {
         mMapView = view.findViewById(R.id.bmapView);
         btnMyLocation = view.findViewById(R.id.btn_my_location);
-        searchView = view.findViewById(R.id.sv_record_search); // 确保ID匹配
-        rvSearchResults = view.findViewById(R.id.rv_search_results); // 确保ID匹配
-
-        // 修改fragment_map.xml，将搜索框和结果列表的ID改为sv_record_search和rv_search_results
+        searchView = view.findViewById(R.id.sv_map_search);
+        ivSearchModeToggle = view.findViewById(R.id.iv_search_mode_toggle);
+        rvSearchResults = view.findViewById(R.id.rv_map_search_results);
     }
 
     private void initMap() {
         mBaiduMap = mMapView.getMap();
         mBaiduMap.setMapType(BaiduMap.MAP_TYPE_NORMAL);
-        mBaiduMap.setMyLocationEnabled(true); // 启用定位图层
+        mBaiduMap.setMyLocationEnabled(true);
 
-        // 创建一个通用的标记图标
-        recordMarkerIcon = BitmapDescriptorFactory.fromResource(R.drawable.ic_location_on);
+        recordSearchAdapter = new RecordSearchAdapter(displayedRecords, this::onRecordSearchResultClick);
+        poiResultAdapter = new PoiResultAdapter(poiResultsList, this::onPoiSearchResultClick);
 
-        // 初始化搜索结果列表
         rvSearchResults.setLayoutManager(new LinearLayoutManager(getContext()));
-        searchAdapter = new RecordSearchAdapter(displayedRecords, record -> {
-            // 点击搜索结果项，移动地图到对应位置并显示信息窗口
-            panToRecord(record, true);
-            rvSearchResults.setVisibility(View.GONE);
-            searchView.clearFocus();
-        });
-        rvSearchResults.setAdapter(searchAdapter);
+        rvSearchResults.setAdapter(recordSearchAdapter);
     }
 
     private void setupListeners() {
+        mBaiduMap.setOnMapLoadedCallback(this);
+        mPoiSearch.setOnGetPoiSearchResultListener(this);
         btnMyLocation.setOnClickListener(v -> requestLocationUpdate());
+        ivSearchModeToggle.setOnClickListener(v -> toggleSearchMode());
 
-        // 地图点击监听，用于隐藏信息窗口
         mBaiduMap.setOnMapClickListener(new BaiduMap.OnMapClickListener() {
             @Override
             public void onMapClick(LatLng latLng) {
                 mBaiduMap.hideInfoWindow();
+                hideSearchResults();
             }
             @Override
-            public void onMapPoiClick(MapPoi mapPoi) {
-                // Do nothing
-            }
+            public void onMapPoiClick(MapPoi mapPoi) {}
         });
 
-        // 标记点击监听
         mBaiduMap.setOnMarkerClickListener(marker -> {
             Bundle bundle = marker.getExtraInfo();
             if (bundle != null) {
                 long recordId = bundle.getLong("record_id", -1);
                 if (recordId != -1) {
-                    // 查找对应的记录并显示信息窗口
-                    displayedRecords.stream()
+                    allRecordsWithLocation.stream()
                             .filter(r -> r.getId() == recordId)
                             .findFirst()
                             .ifPresent(this::showRecordInfoWindow);
@@ -166,123 +172,171 @@ public class MapFragment extends Fragment {
             return true;
         });
 
-        // 搜索框监听
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                performSearch(query);
+                if (TextUtils.isEmpty(query)) return true;
+                if (currentSearchMode == SearchMode.RECORDS) {
+                    performRecordSearch(query);
+                } else {
+                    performLocationSearch(query);
+                }
                 searchView.clearFocus();
                 return true;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                performSearch(newText);
+                if (TextUtils.isEmpty(newText)) {
+                    hideSearchResults();
+                    if(currentSearchMode == SearchMode.RECORDS){
+                        updateMapWithRecords(allRecordsWithLocation);
+                    }
+                }
                 return true;
             }
         });
-        searchView.setOnCloseListener(() -> {
-            loadRecordsForMap(); // 关闭搜索时，恢复显示所有记录
-            return false;
-        });
     }
 
-    /**
-     * 从数据库加载所有带坐标的记录
-     */
+    @Override
+    public void onMapLoaded() {
+        Log.d(TAG, "Map has been loaded. Loading records...");
+        loadRecordsForMap();
+    }
+
+    private void toggleSearchMode() {
+        currentSearchMode = (currentSearchMode == SearchMode.RECORDS) ? SearchMode.LOCATION : SearchMode.RECORDS;
+        updateSearchUI();
+        hideSearchResults();
+    }
+
+    private void updateSearchUI() {
+        if (currentSearchMode == SearchMode.RECORDS) {
+            ivSearchModeToggle.setImageResource(R.drawable.ic_bird);
+            searchView.setQueryHint(getString(R.string.search_birds));
+        } else {
+            ivSearchModeToggle.setImageResource(R.drawable.ic_location);
+            searchView.setQueryHint(getString(R.string.search_location));
+        }
+        searchView.setQuery("", false);
+    }
+
     private void loadRecordsForMap() {
         birdRecordDao.open();
         List<BirdRecord> allRecords = birdRecordDao.getAllRecords();
         birdRecordDao.close();
 
-        // 筛选出有经纬度的记录
         allRecordsWithLocation = allRecords.stream()
                 .filter(r -> !Double.isNaN(r.getLatitude()) && !Double.isNaN(r.getLongitude()))
                 .collect(Collectors.toList());
-
         Log.d(TAG, "Loaded " + allRecordsWithLocation.size() + " records with location.");
         updateMapWithRecords(allRecordsWithLocation);
     }
 
-    /**
-     * 执行搜索
-     * @param query 搜索关键词
-     */
-    private void performSearch(String query) {
-        if (TextUtils.isEmpty(query)) {
-            // 如果搜索词为空，显示所有带位置的记录
-            updateMapWithRecords(allRecordsWithLocation);
-            rvSearchResults.setVisibility(View.GONE);
-            return;
-        }
-
+    private void performRecordSearch(String query) {
         birdRecordDao.open();
         List<BirdRecord> searchResults = birdRecordDao.searchRecords(query);
         birdRecordDao.close();
 
-        // 从搜索结果中再次筛选出有坐标的
         List<BirdRecord> filteredResults = searchResults.stream()
                 .filter(r -> !Double.isNaN(r.getLatitude()) && !Double.isNaN(r.getLongitude()))
                 .collect(Collectors.toList());
 
         updateMapWithRecords(filteredResults);
 
-        // 更新搜索结果列表的可见性
-        if (filteredResults.isEmpty()) {
-            rvSearchResults.setVisibility(View.GONE);
-        } else {
-            rvSearchResults.setVisibility(View.VISIBLE);
-        }
+        rvSearchResults.setAdapter(recordSearchAdapter);
+        recordSearchAdapter.notifyDataSetChanged();
+        rvSearchResults.setVisibility(filteredResults.isEmpty() ? View.GONE : View.VISIBLE);
+    }
+
+    private void performLocationSearch(String keyword) {
+        mPoiSearch.searchInCity(new PoiCitySearchOption().city("北京").keyword(keyword).scope(2));
     }
 
 
-    /**
-     * 使用给定的记录列表更新地图和搜索结果列表
-     * @param records 要显示的记录列表
-     */
     private void updateMapWithRecords(List<BirdRecord> records) {
-        // 更新当前显示的记录列表
+        mBaiduMap.clear();
         this.displayedRecords.clear();
         this.displayedRecords.addAll(records);
 
-        // 清空地图上的旧标记
-        mBaiduMap.clear();
-
-        // 添加新标记
-        for (BirdRecord record : this.displayedRecords) {
-            LatLng point = new LatLng(record.getLatitude(), record.getLongitude());
-            // 增加一个空值检查，确保图标已成功加载
-            if (recordMarkerIcon != null) {
-                MarkerOptions options = new MarkerOptions()
-                        .position(point)
-                        .icon(recordMarkerIcon)
-                        .zIndex(9)
-                        .draggable(false);
-                Marker marker = (Marker) mBaiduMap.addOverlay(options);
-                Bundle bundle = new Bundle();
-                bundle.putLong("record_id", record.getId());
-                marker.setExtraInfo(bundle);
-            } else {
-                // 如果图标为空，在日志中记录一个错误，但不会导致应用闪退
-                Log.e(TAG, "recordMarkerIcon is null, cannot create a marker for record: " + record.getTitle());
-            }
+        if (records.isEmpty()) {
+            recordSearchAdapter.notifyDataSetChanged();
+            return;
         }
 
-        // 更新搜索结果列表的适配器
-        searchAdapter.notifyDataSetChanged();
+        for (BirdRecord record : this.displayedRecords) {
+            createCustomMarker(record);
+        }
 
-        // 如果有结果，调整地图视野以包含所有标记
-        if (!this.displayedRecords.isEmpty()) {
-            zoomToFitRecords(this.displayedRecords);
+        zoomToFitRecords(this.displayedRecords);
+    }
+
+    // **核心修改**：创建自定义图文标记的方法
+    private void createCustomMarker(final BirdRecord record) {
+        if (getContext() == null) return;
+
+        LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View markerView = inflater.inflate(R.layout.view_custom_marker, null);
+
+        ImageView ivThumbnail = markerView.findViewById(R.id.iv_marker_thumbnail);
+        TextView tvTitle = markerView.findViewById(R.id.tv_marker_title);
+        tvTitle.setText(record.getBirdName()); // 直接显示鸟名更简洁
+
+        // 异步加载图片
+        if (record.getPhotoUris() != null && !record.getPhotoUris().isEmpty()) {
+            Glide.with(getContext())
+                    .asBitmap()
+                    .load(Uri.parse(record.getPhotoUris().get(0)))
+                    .placeholder(R.drawable.ic_bird_default) // 占位图
+                    .error(R.drawable.ic_picture_error) // 错误图
+                    .into(new CustomTarget<Bitmap>() {
+                        @Override
+                        public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
+                            ivThumbnail.setImageBitmap(resource);
+                            addMarkerToMap(record, markerView);
+                        }
+                        @Override
+                        public void onLoadCleared(@Nullable Drawable placeholder) {
+                            // 如果需要，可以在这里处理占位图
+                        }
+                        @Override
+                        public void onLoadFailed(@Nullable Drawable errorDrawable) {
+                            super.onLoadFailed(errorDrawable);
+                            // 图片加载失败，也使用默认图标添加标记
+                            ivThumbnail.setImageDrawable(errorDrawable);
+                            addMarkerToMap(record, markerView);
+                        }
+                    });
+        } else {
+            // 没有图片，直接使用占位符添加标记
+            ivThumbnail.setImageResource(R.drawable.ic_bird_default);
+            addMarkerToMap(record, markerView);
         }
     }
 
-    /**
-     * 显示指定记录的信息窗口
-     * @param record 要显示信息的记录
-     */
-    private void showRecordInfoWindow(BirdRecord record) {
-        View infoView = LayoutInflater.from(getContext()).inflate(R.layout.info_window_record, null);
+    // 将View转换为Bitmap并添加到地图上
+    private void addMarkerToMap(BirdRecord record, View markerView) {
+        BitmapDescriptor descriptor = BitmapDescriptorFactory.fromView(markerView);
+        if (descriptor == null) {
+            Log.e(TAG, "Failed to create BitmapDescriptor from view for record: " + record.getTitle());
+            return;
+        }
+        LatLng position = new LatLng(record.getLatitude(), record.getLongitude());
+        MarkerOptions options = new MarkerOptions().position(position).icon(descriptor).anchor(0.5f, 1.0f);
+
+        Marker marker = (Marker) mBaiduMap.addOverlay(options);
+        if (marker != null) {
+            Bundle bundle = new Bundle();
+            bundle.putLong("record_id", record.getId());
+            marker.setExtraInfo(bundle);
+        }
+    }
+
+
+    private void showRecordInfoWindow(final BirdRecord record) {
+        // ... (此部分代码无需修改)
+        View infoView = LayoutInflater.from(getContext()).inflate(R.layout.info_window_record, null, false);
+        ImageView ivThumbnail = infoView.findViewById(R.id.iv_info_thumbnail);
         TextView tvTitle = infoView.findViewById(R.id.tv_info_title);
         TextView tvBirdName = infoView.findViewById(R.id.tv_info_bird_name);
         TextView tvDateLocation = infoView.findViewById(R.id.tv_info_date_location);
@@ -290,44 +344,100 @@ public class MapFragment extends Fragment {
         tvTitle.setText(record.getTitle());
         tvBirdName.setText("鸟类: " + record.getBirdName());
         String date = record.getRecordDate() != null ? dateFormat.format(record.getRecordDate()) : "未知日期";
-        String location = !TextUtils.isEmpty(record.getDetailedLocation()) ? record.getDetailedLocation() : "未知地点";
-        tvDateLocation.setText(date + " | " + location);
+        tvDateLocation.setText(date + " | " + record.getDetailedLocation());
 
-        LatLng position = new LatLng(record.getLatitude(), record.getLongitude());
-        mInfoWindow = new InfoWindow(infoView, position, -150); // y偏移量，防止挡住标记
-        mBaiduMap.showInfoWindow(mInfoWindow);
+        final LatLng position = new LatLng(record.getLatitude(), record.getLongitude());
 
-        // 平移地图以确保信息窗口可见
-        panToRecord(record, false);
+        if (record.getPhotoUris() != null && !record.getPhotoUris().isEmpty()) {
+            ivThumbnail.setVisibility(View.VISIBLE);
+            Glide.with(requireContext())
+                    .asBitmap()
+                    .load(Uri.parse(record.getPhotoUris().get(0)))
+                    .placeholder(R.drawable.ic_launcher_background)
+                    .error(R.drawable.ic_picture_error)
+                    .into(new CustomTarget<Bitmap>() {
+                        @Override
+                        public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
+                            ivThumbnail.setImageBitmap(resource);
+                            mBaiduMap.hideInfoWindow();
+                            mInfoWindow = new InfoWindow(infoView, position, -200);
+                            mBaiduMap.showInfoWindow(mInfoWindow);
+                        }
+                        @Override
+                        public void onLoadCleared(@Nullable Drawable placeholder) { }
+                    });
+        } else {
+            ivThumbnail.setVisibility(View.GONE);
+            mBaiduMap.hideInfoWindow();
+            mInfoWindow = new InfoWindow(infoView, position, -200);
+            mBaiduMap.showInfoWindow(mInfoWindow);
+        }
+        panToRecord(record);
     }
 
-    /**
-     * 移动地图到指定记录的位置
-     * @param record 目标记录
-     * @param showInfoWindow 是否在移动后显示信息窗口
-     */
-    private void panToRecord(BirdRecord record, boolean showInfoWindow) {
-        if (record == null || Double.isNaN(record.getLatitude()) || Double.isNaN(record.getLongitude())) return;
-        LatLng position = new LatLng(record.getLatitude(), record.getLongitude());
-        MapStatusUpdate update = MapStatusUpdateFactory.newLatLngZoom(position, 17f); // 缩放到一个较近的级别
-        mBaiduMap.animateMapStatus(update);
-
-        if (showInfoWindow) {
-            // 延迟显示，确保地图移动动画流畅
-            mainHandler.postDelayed(() -> showRecordInfoWindow(record), 400);
+    private void hideSearchResults() {
+        if(rvSearchResults != null) {
+            rvSearchResults.setVisibility(View.GONE);
+        }
+        if (searchView != null) {
+            searchView.clearFocus();
         }
     }
 
-    /**
-     * 调整地图视野以包含所有记录
-     * @param records 记录列表
-     */
-    private void zoomToFitRecords(List<BirdRecord> records) {
-        if (records == null || records.size() < 2) {
-            // 如果只有一个或没有记录，就移动到那一个记录的位置
-            if (records != null && records.size() == 1) {
-                panToRecord(records.get(0), false);
+    private void onRecordSearchResultClick(BirdRecord record) {
+        hideSearchResults();
+        panToRecord(record);
+        mainHandler.postDelayed(() -> showRecordInfoWindow(record), 400);
+    }
+
+    private void onPoiSearchResultClick(PoiInfo poi) {
+        hideSearchResults();
+        if (poi.location != null) {
+            MapStatusUpdate update = MapStatusUpdateFactory.newLatLngZoom(poi.location, 17f);
+            mBaiduMap.animateMapStatus(update);
+        }
+    }
+
+    @Override
+    public void onGetPoiResult(PoiResult poiResult) {
+        poiResultsList.clear();
+        if (poiResult != null && poiResult.error == SearchResult.ERRORNO.NO_ERROR) {
+            if (poiResult.getAllPoi() != null) {
+                poiResultsList.addAll(poiResult.getAllPoi());
             }
+        }
+
+        if (poiResultsList.isEmpty()) {
+            Toast.makeText(getContext(), "未找到相关地点", Toast.LENGTH_SHORT).show();
+            rvSearchResults.setVisibility(View.GONE);
+        } else {
+            rvSearchResults.setAdapter(poiResultAdapter);
+            poiResultAdapter.notifyDataSetChanged();
+            rvSearchResults.setVisibility(View.VISIBLE);
+        }
+    }
+    @Override
+    public void onGetPoiDetailResult(PoiDetailResult poiDetailResult) {}
+    @Override
+    public void onGetPoiDetailResult(PoiDetailSearchResult poiDetailSearchResult) {}
+    @Override
+    public void onGetPoiIndoorResult(PoiIndoorResult poiIndoorResult) {}
+
+    private void panToRecord(BirdRecord record) {
+        if (record == null || Double.isNaN(record.getLatitude()) || Double.isNaN(record.getLongitude())) return;
+        LatLng position = new LatLng(record.getLatitude(), record.getLongitude());
+        MapStatusUpdate update = MapStatusUpdateFactory.newLatLng(position);
+        mBaiduMap.animateMapStatus(update);
+    }
+
+    private void zoomToFitRecords(List<BirdRecord> records) {
+        if (mMapView == null || records == null || records.isEmpty()) {
+            return;
+        }
+
+        if (records.size() == 1) {
+            LatLng position = new LatLng(records.get(0).getLatitude(), records.get(0).getLongitude());
+            mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newLatLngZoom(position, 16f));
             return;
         }
 
@@ -335,16 +445,16 @@ public class MapFragment extends Fragment {
         for (BirdRecord record : records) {
             builder.include(new LatLng(record.getLatitude(), record.getLongitude()));
         }
-        LatLngBounds bounds = builder.build();
-        MapStatusUpdate update = MapStatusUpdateFactory.newLatLngBounds(bounds,
-                mMapView.getWidth() - 200, mMapView.getHeight() - 400); // 留出边距
-        mBaiduMap.animateMapStatus(update);
+        try {
+            LatLngBounds bounds = builder.build();
+            MapStatusUpdate update = MapStatusUpdateFactory.newLatLngBounds(bounds, 150, 150, 150, 150);
+            mBaiduMap.animateMapStatus(update);
+        } catch(Exception e) {
+            Log.e(TAG, "Error zooming to fit records", e);
+        }
     }
 
-    // --- 定位相关方法 ---
-
     private void initLocation() {
-        checkLocationPermission();
         try {
             LocationClient.setAgreePrivacy(true);
             mLocationClient = new LocationClient(requireContext().getApplicationContext());
@@ -352,109 +462,79 @@ public class MapFragment extends Fragment {
             LocationClientOption option = new LocationClientOption();
             option.setOpenGps(true);
             option.setCoorType("bd09ll");
-            option.setScanSpan(5000); // 5秒更新一次位置
-            option.setIsNeedAddress(true);
+            option.setScanSpan(5000);
             mLocationClient.setLocOption(option);
         } catch (Exception e) {
             Log.e(TAG, "Failed to init Baidu Location client", e);
         }
     }
 
-    private void checkLocationPermission() {
-        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED) {
-            hasLocationPermission = true;
-            startLocation();
-        } else {
+    private void requestLocationUpdate() {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
+            return;
         }
+        if (mLocationClient == null) return;
+
+        mLocationClient.requestLocation();
+        Toast.makeText(getContext(), "正在获取最新位置...", Toast.LENGTH_SHORT).show();
     }
+
+
+    private final BDAbstractLocationListener mLocationListener = new BDAbstractLocationListener() {
+        @Override
+        public void onReceiveLocation(BDLocation location) {
+            if (location == null || mMapView == null) return;
+            MyLocationData locData = new MyLocationData.Builder()
+                    .accuracy(location.getRadius())
+                    .latitude(location.getLatitude())
+                    .longitude(location.getLongitude()).build();
+            mBaiduMap.setMyLocationData(locData);
+
+            // 只有在第一次启动应用时自动移动到当前位置
+            if (isFirstLocate) {
+                isFirstLocate = false;
+                MapStatusUpdate u = MapStatusUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 16f);
+                mBaiduMap.animateMapStatus(u);
+            }
+        }
+    };
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                hasLocationPermission = true;
-                startLocation();
+                mLocationClient.start();
             } else {
-                hasLocationPermission = false;
                 Toast.makeText(getContext(), "定位权限被拒绝", Toast.LENGTH_SHORT).show();
             }
         }
     }
 
-    private void startLocation() {
-        if (mLocationClient != null && hasLocationPermission && !mLocationClient.isStarted()) {
-            mLocationClient.start();
-        }
-    }
-
-    private void requestLocationUpdate() {
-        if (mLocationClient != null && hasLocationPermission) {
-            isFirstLocate = true; // 强制更新地图中心
-            mLocationClient.requestLocation();
-            Toast.makeText(getContext(), "正在定位...", Toast.LENGTH_SHORT).show();
-        } else if (!hasLocationPermission) {
-            checkLocationPermission();
-        }
-    }
-
-    private final BDAbstractLocationListener mLocationListener = new BDAbstractLocationListener() {
-        @Override
-        public void onReceiveLocation(BDLocation location) {
-            if (location == null || mMapView == null) {
-                return;
-            }
-            MyLocationData locData = new MyLocationData.Builder()
-                    .accuracy(location.getRadius())
-                    .direction(location.getDirection())
-                    .latitude(location.getLatitude())
-                    .longitude(location.getLongitude()).build();
-            mBaiduMap.setMyLocationData(locData);
-
-            if (isFirstLocate) {
-                isFirstLocate = false;
-                LatLng ll = new LatLng(location.getLatitude(), location.getLongitude());
-                MapStatusUpdate u = MapStatusUpdateFactory.newLatLngZoom(ll, 16f);
-                mBaiduMap.animateMapStatus(u);
-            }
-        }
-    };
-
-
-    // --- Fragment生命周期管理 ---
-
     @Override
     public void onResume() {
         super.onResume();
         mMapView.onResume();
-        startLocation(); // 页面可见时启动定位
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            mLocationClient.start();
+        }
     }
 
     @Override
     public void onPause() {
         super.onPause();
         mMapView.onPause();
-        if (mLocationClient != null && mLocationClient.isStarted()) {
-            mLocationClient.stop(); // 页面不可见时停止定位，节省电量
-        }
+        mLocationClient.stop();
     }
-
-
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        // 销毁地图和定位资源
-        if (mLocationClient != null) {
-            mLocationClient.unRegisterLocationListener(mLocationListener);
-            mLocationClient.stop();
-        }
+        mPoiSearch.destroy();
+        mLocationClient.unRegisterLocationListener(mLocationListener);
+        mLocationClient.stop();
         mBaiduMap.setMyLocationEnabled(false);
-        if (recordMarkerIcon != null) {
-            recordMarkerIcon.recycle();
-        }
         mMapView.onDestroy();
         mMapView = null;
     }
