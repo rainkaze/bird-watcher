@@ -11,8 +11,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -24,9 +26,7 @@ import com.rainkaze.birdwatcher.network.BirdApiService;
 import com.rainkaze.birdwatcher.network.RetrofitClient;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -34,275 +34,158 @@ import retrofit2.Response;
 
 public class KnowledgeFragment extends Fragment {
 
-    private static final String TAG = "KnowledgeFragment";
+    private static final String TAG = "KnowledgeFragment"; // 用于在Logcat中过滤日志
     private SearchView searchView;
     private RecyclerView rvBirds;
     private SwipeRefreshLayout swipeRefreshLayout;
     private TextView tvEmptyState;
 
-    private final Handler handler = new Handler(Looper.getMainLooper());
-    private Runnable searchRunnable;
-
     private BirdKnowledgeAdapter birdAdapter;
-    private final List<Bird> allBirds = new ArrayList<>();
-    private final List<Bird> filteredBirds = new ArrayList<>();
-
-    private static final String DEFAULT_REGION = "CN";
-    private static final int DAYS_BACK = 30;
-    private static final int MAX_RESULTS = 50;
+    private final List<Bird> birdList = new ArrayList<>();
+    private final BirdApiService apiService = RetrofitClient.getApiService();
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_knowledge, container, false);
+        Log.d(TAG, "onCreateView: Fragment view created.");
+
+        // 初始化所有视图
         searchView = view.findViewById(R.id.search_view);
         rvBirds = view.findViewById(R.id.rv_birds);
         swipeRefreshLayout = view.findViewById(R.id.swipe_refresh);
         tvEmptyState = view.findViewById(R.id.tv_empty_state);
 
-        setupSearchView();
         setupBirdRecyclerView();
         setupSwipeRefresh();
-        loadBirdData();
+        setupSearchView();
+
+        // 首次进入时加载数据
+        loadInitialData();
 
         return view;
     }
 
-    private void setupSearchView() {
-        searchView.setQueryHint("搜索鸟类名称...");
-        searchView.setIconifiedByDefault(false);
-
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                handleSearchWithDebounce(query.trim());
-                return true;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                if (newText.isEmpty()) {
-                    showAllBirds();
-                } else {
-                    handleSearchWithDebounce(newText.trim());
-                }
-                return true;
-            }
-        });
-    }
-
-    private void handleSearchWithDebounce(String query) {
-        if (searchRunnable != null) {
-            handler.removeCallbacks(searchRunnable);
-        }
-        searchRunnable = () -> {
-            if (query.isEmpty()) {
-                showAllBirds();
-            } else {
-                searchBirds(query);
-            }
-        };
-        handler.postDelayed(searchRunnable, 500);
-    }
-
     private void setupBirdRecyclerView() {
         rvBirds.setLayoutManager(new LinearLayoutManager(requireContext()));
-        birdAdapter = new BirdKnowledgeAdapter(filteredBirds);
+        birdAdapter = new BirdKnowledgeAdapter(birdList);
         birdAdapter.setOnBirdItemClickListener(this::openBirdDetail);
         rvBirds.setAdapter(birdAdapter);
     }
 
     private void setupSwipeRefresh() {
-        swipeRefreshLayout.setOnRefreshListener(this::loadBirdData);
+        // 设置下拉刷新的监听器
+        swipeRefreshLayout.setOnRefreshListener(this::loadInitialData);
     }
 
-    private void updateEmptyState() {
-        if (filteredBirds.isEmpty()) {
+    private void setupSearchView() {
+        searchView.setQueryHint("搜索鸟类 (中/英文)");
+        searchView.setIconifiedByDefault(false);
+        // 此处我们暂时简化，只处理提交搜索的场景
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                if (query != null && !query.trim().isEmpty()) {
+                    searchBirds(query.trim());
+                } else {
+                    loadInitialData(); // 如果清空后提交，则加载初始数据
+                }
+                searchView.clearFocus(); // 隐藏键盘
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                // 暂时留空，以简化逻辑，避免过于频繁的API请求
+                return true;
+            }
+        });
+    }
+
+    // 统一的视图状态更新方法
+    private void updateViewState(boolean isLoading, boolean isEmpty, @Nullable String message) {
+        swipeRefreshLayout.setRefreshing(isLoading); // 控制刷新动画
+
+        if (isEmpty) {
             rvBirds.setVisibility(View.GONE);
             tvEmptyState.setVisibility(View.VISIBLE);
+            // 如果有消息，就显示消息，否则显示默认文本
+            tvEmptyState.setText(message != null ? message : "暂无鸟类数据\n下拉刷新试试");
         } else {
             rvBirds.setVisibility(View.VISIBLE);
             tvEmptyState.setVisibility(View.GONE);
         }
     }
 
-    private void loadBirdData() {
-        swipeRefreshLayout.setRefreshing(true);
-        allBirds.clear();
-        filteredBirds.clear();
-        birdAdapter.updateData(filteredBirds);
-        updateEmptyState();
-
-        BirdApiService apiService = RetrofitClient.getApiService();
-        Call<List<Bird>> call = apiService.getRecentObservations(DEFAULT_REGION, DAYS_BACK, MAX_RESULTS);
-        call.enqueue(new Callback<List<Bird>>() {
+    // 加载初始数据（近期观察记录）
+    private void loadInitialData() {
+        Log.d(TAG, "loadInitialData: Fetching recent observations...");
+        updateViewState(true, false, null); // 显示加载动画
+        apiService.getRecentObservations("CN", 30, 100).enqueue(new Callback<List<Bird>>() {
             @Override
             public void onResponse(@NonNull Call<List<Bird>> call, @NonNull Response<List<Bird>> response) {
-                swipeRefreshLayout.setRefreshing(false);
-                if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
-                    processBirdList(response.body(), true);
+                if (!isAdded()) return; // 防止Fragment销毁后还更新UI
+
+                if (response.isSuccessful() && response.body() != null) {
+                    Log.d(TAG, "onResponse: Success! Received " + response.body().size() + " bird records.");
+                    birdList.clear();
+                    birdList.addAll(response.body());
+                    birdAdapter.notifyDataSetChanged();
+                    updateViewState(false, birdList.isEmpty(), null);
                 } else {
-                    String errorMsg = "获取鸟类数据失败: ";
-                    if (response.code() == 404) {
-                        errorMsg += "未找到资源";
-                    } else if (response.body() == null || response.body().isEmpty()) {
-                        errorMsg += "返回空数据";
-                    } else {
-                        errorMsg += "错误码: " + response.code();
-                    }
-                    Log.e(TAG, errorMsg);
-                    showToast(errorMsg);
-                    updateEmptyState();
+                    Log.e(TAG, "onResponse: API call not successful. Code: " + response.code());
+                    updateViewState(false, true, "加载失败, 错误码: " + response.code());
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<List<Bird>> call, @NonNull Throwable t) {
-                swipeRefreshLayout.setRefreshing(false);
-                Log.e(TAG, "网络请求失败: " + t.getMessage());
-                showToast("网络错误: " + t.getMessage());
-                updateEmptyState();
+                if (!isAdded()) return;
+                Log.e(TAG, "onFailure: API call failed.", t);
+                updateViewState(false, true, "网络错误, 请检查您的网络连接");
             }
         });
     }
 
+    // 根据名称搜索鸟类
     private void searchBirds(String query) {
-        if (query.isEmpty()) {
-            showAllBirds();
-            return;
-        }
-
-        swipeRefreshLayout.setRefreshing(true);
-        filteredBirds.clear();
-        birdAdapter.updateData(filteredBirds);
-        updateEmptyState();
-
-        BirdApiService apiService = RetrofitClient.getApiService();
-        Call<List<Bird>> call = apiService.searchBirds(query, "zh");
-        call.enqueue(new Callback<List<Bird>>() {
+        Log.d(TAG, "searchBirds: Searching for '" + query + "'...");
+        updateViewState(true, false, null);
+        apiService.searchBirds(query, "zh").enqueue(new Callback<List<Bird>>() {
             @Override
             public void onResponse(@NonNull Call<List<Bird>> call, @NonNull Response<List<Bird>> response) {
-                swipeRefreshLayout.setRefreshing(false);
-                if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
-                    processBirdList(response.body(), false);
+                if (!isAdded()) return;
+                if (response.isSuccessful() && response.body() != null) {
+                    Log.d(TAG, "onResponse: Search successful! Found " + response.body().size() + " results.");
+                    birdList.clear();
+                    birdList.addAll(response.body());
+                    birdAdapter.notifyDataSetChanged();
+                    updateViewState(false, birdList.isEmpty(), "未找到关于 \""+query+"\" 的结果");
                 } else {
-                    String errorMsg = "搜索失败: ";
-                    if (response.code() == 404) {
-                        errorMsg += "未找到相关鸟类";
-                    } else if (response.body() == null || response.body().isEmpty()) {
-                        errorMsg += "无匹配结果";
-                    } else {
-                        errorMsg += "错误码: " + response.code();
-                    }
-                    Log.e(TAG, errorMsg);
-                    showToast(errorMsg);
-                    updateEmptyState();
+                    Log.e(TAG, "onResponse: Search API call not successful. Code: " + response.code());
+                    updateViewState(false, true, "搜索失败, 错误码: " + response.code());
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<List<Bird>> call, @NonNull Throwable t) {
-                swipeRefreshLayout.setRefreshing(false);
-                Log.e(TAG, "搜索请求失败: " + t.getMessage());
-                showToast("搜索失败: " + t.getMessage());
-                updateEmptyState();
+                if (!isAdded()) return;
+                Log.e(TAG, "onFailure: Search API call failed.", t);
+                updateViewState(false, true, "网络错误, 请检查您的网络连接");
             }
         });
     }
 
-    private void processBirdList(List<Bird> birds, boolean isFullList) {
-        if (birds == null || birds.isEmpty()) {
-            Log.d(TAG, "处理空鸟列表");
-            swipeRefreshLayout.setRefreshing(false);
-            updateEmptyState();
+    // 打开鸟类详情页
+    private void openBirdDetail(Bird bird) {
+        if (!isAdded() || bird == null || bird.getSpeciesCode() == null) {
+            Toast.makeText(getContext(), "无法打开详情, 数据不完整", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        List<Bird> detailedBirds = Collections.synchronizedList(new ArrayList<>());
-        AtomicInteger counter = new AtomicInteger(birds.size());
-        BirdApiService apiService = RetrofitClient.getApiService();
-
-        for (Bird bird : birds) {
-            Call<Bird> speciesCall = apiService.getSpeciesInfo(bird.getSpeciesCode());
-            speciesCall.enqueue(new Callback<Bird>() {
-                @Override
-                public void onResponse(@NonNull Call<Bird> call, @NonNull Response<Bird> response) {
-                    if (response.isSuccessful() && response.body() != null) {
-                        Bird detailed = response.body();
-                        // 使用固定格式的图片URL
-                        detailed.setImageUrl("https://cdn.download.ams.birds.cornell.edu/api/v1/asset/" + detailed.getSpeciesCode() + "/320");
-                        synchronized (detailedBirds) {
-                            detailedBirds.add(detailed);
-                        }
-                    } else {
-                        // 设置默认图片
-                        bird.setImageUrl(null);
-                        synchronized (detailedBirds) {
-                            detailedBirds.add(bird);
-                        }
-                    }
-
-                    if (counter.decrementAndGet() == 0) {
-                        requireActivity().runOnUiThread(() -> {
-                            updateFinalBirdList(detailedBirds, isFullList);
-                        });
-                    }
-                }
-
-                @Override
-                public void onFailure(@NonNull Call<Bird> call, @NonNull Throwable t) {
-                    Log.e(TAG, "获取物种信息失败: " + t.getMessage());
-                    // 设置默认图片
-                    bird.setImageUrl(null);
-                    synchronized (detailedBirds) {
-                        detailedBirds.add(bird);
-                    }
-
-                    if (counter.decrementAndGet() == 0) {
-                        requireActivity().runOnUiThread(() -> {
-                            updateFinalBirdList(detailedBirds, isFullList);
-                        });
-                    }
-                }
-            });
-        }
-    }
-
-    private void updateFinalBirdList(List<Bird> detailedBirds, boolean isFullList) {
-        if (isFullList) {
-            allBirds.clear();
-            allBirds.addAll(detailedBirds);
-            showAllBirds();
-        } else {
-            filteredBirds.clear();
-            filteredBirds.addAll(detailedBirds);
-            birdAdapter.updateData(filteredBirds);
-        }
-        updateEmptyState();
-        swipeRefreshLayout.setRefreshing(false);
-    }
-
-    private void showAllBirds() {
-        filteredBirds.clear();
-        filteredBirds.addAll(allBirds);
-        birdAdapter.updateData(filteredBirds);
-        updateEmptyState();
-    }
-
-    private void openBirdDetail(Bird bird) {
-        if (!isAdded()) return;
-        // 打开鸟类详情页
-        Toast.makeText(requireContext(), "打开鸟类详情: " + bird.getCommonName(), Toast.LENGTH_SHORT).show();
-    }
-
-    private void showToast(String message) {
-        if (getContext() != null) {
-            Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        handler.removeCallbacksAndMessages(null);
+        BirdDetailFragment fragment = BirdDetailFragment.newInstance(bird);
+        getParentFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, fragment)
+                .addToBackStack(null)
+                .commit();
     }
 }

@@ -28,9 +28,19 @@ public class BirdKnowledgeAdapter extends RecyclerView.Adapter<BirdKnowledgeAdap
     }
 
     public void updateData(List<Bird> newBirdList) {
-        this.birdList = newBirdList;
+        this.birdList.clear();
+        this.birdList.addAll(newBirdList);
         notifyDataSetChanged();
     }
+
+    // Method to update a single bird item, e.g., after fetching its image URL
+    public void updateBirdItem(int position, Bird bird) {
+        if (position >= 0 && position < birdList.size()) {
+            birdList.set(position, bird);
+            notifyItemChanged(position);
+        }
+    }
+
 
     @NonNull
     @Override
@@ -44,36 +54,7 @@ public class BirdKnowledgeAdapter extends RecyclerView.Adapter<BirdKnowledgeAdap
     @Override
     public void onBindViewHolder(@NonNull BirdViewHolder holder, int position) {
         Bird bird = birdList.get(position);
-        holder.tvBirdName.setText(bird.getCommonName() != null ? bird.getCommonName() : "未知");
-
-        // 处理科学名显示
-        String sciName = bird.getScientificName();
-        if (sciName != null && !sciName.isEmpty()) {
-            holder.tvScientificName.setText(sciName);
-        } else {
-            holder.tvScientificName.setText("未知");
-        }
-
-        // 处理图片显示 - 添加图片URL生成逻辑
-        String imageUrl = bird.getImageUrl();
-        if (imageUrl == null || imageUrl.isEmpty()) {
-            // 如果API没有提供图片URL，尝试生成一个
-            imageUrl = "https://cdn.download.ams.birds.cornell.edu/api/v1/asset/" +
-                    bird.getSpeciesCode() + "/320";
-        }
-
-        // 使用Glide加载图片
-        Glide.with(context)
-                .load(imageUrl)
-                .placeholder(R.drawable.ic_bird_placeholder)
-                .error(R.drawable.ic_bird_error)
-                .into(holder.ivBirdImage);
-
-        holder.itemView.setOnClickListener(v -> {
-            if (listener != null) {
-                listener.onBirdItemClick(bird);
-            }
-        });
+        holder.bind(bird);
     }
 
     @Override
@@ -81,7 +62,7 @@ public class BirdKnowledgeAdapter extends RecyclerView.Adapter<BirdKnowledgeAdap
         return birdList != null ? birdList.size() : 0;
     }
 
-    public static class BirdViewHolder extends RecyclerView.ViewHolder {
+    public class BirdViewHolder extends RecyclerView.ViewHolder {
         ImageView ivBirdImage;
         TextView tvBirdName;
         TextView tvScientificName;
@@ -91,6 +72,31 @@ public class BirdKnowledgeAdapter extends RecyclerView.Adapter<BirdKnowledgeAdap
             ivBirdImage = itemView.findViewById(R.id.iv_bird_image);
             tvBirdName = itemView.findViewById(R.id.tv_bird_name);
             tvScientificName = itemView.findViewById(R.id.tv_scientific_name);
+
+            itemView.setOnClickListener(v -> {
+                int position = getAdapterPosition();
+                if (listener != null && position != RecyclerView.NO_POSITION) {
+                    listener.onBirdItemClick(birdList.get(position));
+                }
+            });
+        }
+
+        public void bind(Bird bird) {
+            tvBirdName.setText(bird.getCommonName() != null ? bird.getCommonName() : "名称加载中...");
+            tvScientificName.setText(bird.getScientificName() != null ? bird.getScientificName() : "Scientific name loading...");
+
+            // If an image URL is already set, use it. Otherwise, use a placeholder.
+            String imageUrl = bird.getImageUrl();
+            if (imageUrl != null && !imageUrl.isEmpty()) {
+                Glide.with(context)
+                        .load(imageUrl)
+                        .placeholder(R.drawable.ic_bird_placeholder)
+                        .error(R.drawable.ic_bird_error)
+                        .into(ivBirdImage);
+            } else {
+                // Set a placeholder, the actual image will be loaded asynchronously
+                Glide.with(context).load(R.drawable.ic_bird_placeholder).into(ivBirdImage);
+            }
         }
     }
 
