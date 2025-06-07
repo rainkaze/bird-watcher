@@ -44,21 +44,30 @@ public class BirdKnowledgeAdapter extends RecyclerView.Adapter<BirdKnowledgeAdap
     @Override
     public void onBindViewHolder(@NonNull BirdViewHolder holder, int position) {
         Bird bird = birdList.get(position);
-        holder.tvBirdName.setText(bird.getCommonName());
-        holder.tvScientificName.setText(bird.getScientificName());
+        holder.tvBirdName.setText(bird.getCommonName() != null ? bird.getCommonName() : "未知");
 
-        String imageUrl = bird.getImageUrl();
-        if (imageUrl != null && !imageUrl.isEmpty()) {
-            Glide.with(context)
-                    .load(imageUrl)
-                    .placeholder(R.drawable.ic_bird_placeholder)
-                    .error(R.drawable.ic_bird_error)
-                    .into(holder.ivBirdImage);
+        // 处理科学名显示
+        String sciName = bird.getScientificName();
+        if (sciName != null && !sciName.isEmpty()) {
+            holder.tvScientificName.setText(sciName);
         } else {
-            Glide.with(context)
-                    .load(R.drawable.ic_bird_placeholder)
-                    .into(holder.ivBirdImage);
+            holder.tvScientificName.setText("未知");
         }
+
+        // 处理图片显示 - 添加图片URL生成逻辑
+        String imageUrl = bird.getImageUrl();
+        if (imageUrl == null || imageUrl.isEmpty()) {
+            // 如果API没有提供图片URL，尝试生成一个
+            imageUrl = "https://cdn.download.ams.birds.cornell.edu/api/v1/asset/" +
+                    bird.getSpeciesCode() + "/320";
+        }
+
+        // 使用Glide加载图片
+        Glide.with(context)
+                .load(imageUrl)
+                .placeholder(R.drawable.ic_bird_placeholder)
+                .error(R.drawable.ic_bird_error)
+                .into(holder.ivBirdImage);
 
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) {

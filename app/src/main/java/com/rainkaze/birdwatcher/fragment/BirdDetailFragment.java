@@ -6,7 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.Toolbar;
+import androidx.appcompat.widget.Toolbar;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -71,30 +71,44 @@ public class BirdDetailFragment extends Fragment {
 
         // 设置基本信息
         if (bird != null) {
+            // 先显示已有信息
+            displayBasicInfo();
+            // 然后加载详细信息
             loadBirdDetails();
         }
 
         return view;
     }
 
+    private void displayBasicInfo() {
+        tvCommonName.setText(bird.getCommonName() != null ? bird.getCommonName() : "未知");
+        tvScientificName.setText(bird.getScientificName() != null ? bird.getScientificName() : "未知");
+
+        // 尝试加载图片
+        if (bird.getImageUrl() != null && !bird.getImageUrl().isEmpty()) {
+            Glide.with(requireContext())
+                    .load(bird.getImageUrl())
+                    .placeholder(R.drawable.ic_bird_placeholder)
+                    .error(R.drawable.ic_bird_error)
+                    .into(ivBirdImage);
+        } else {
+            // 使用默认图片
+            Glide.with(requireContext())
+                    .load(R.drawable.ic_bird_placeholder)
+                    .into(ivBirdImage);
+        }
+    }
+
     private void loadBirdDetails() {
         BirdApiService apiService = RetrofitClient.getApiService();
 
+        // 获取物种详细信息
         apiService.getSpeciesInfo(bird.getSpeciesCode()).enqueue(new Callback<Bird>() {
             @Override
             public void onResponse(Call<Bird> call, Response<Bird> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     bird = response.body();
-                    tvCommonName.setText(bird.getCommonName());
-                    tvScientificName.setText(bird.getScientificName());
-                    tvOrder.setText("目: " + bird.getOrder());
-                    tvFamily.setText("科: " + bird.getFamilyCommonName());
-
-                    String locality = bird.getLocality() != null ? bird.getLocality() : "未知";
-                    tvDistribution.setText("分布区域: " + locality);
-
-                    loadBirdImage(); // 用 speciesCode 获取图片
-                    loadBirdDescription(); // 用 speciesCode 获取描述
+                    updateDetailsUI();
                 }
             }
 
@@ -103,12 +117,25 @@ public class BirdDetailFragment extends Fragment {
                 showToast("加载详情失败: " + t.getMessage());
             }
         });
+
+        // 同时加载描述
+        loadBirdDescription();
+        // 加载更高质量的图片
+        loadBirdImage();
     }
 
+    private void updateDetailsUI() {
+        tvCommonName.setText(bird.getCommonName() != null ? bird.getCommonName() : "未知");
+        tvScientificName.setText(bird.getScientificName() != null ? bird.getScientificName() : "未知");
+        tvOrder.setText("目: " + (bird.getOrder() != null ? bird.getOrder() : "未知"));
+        tvFamily.setText("科: " + (bird.getFamilyCommonName() != null ? bird.getFamilyCommonName() : "未知"));
+
+        String locality = bird.getLocality() != null ? bird.getLocality() : "未知";
+        tvDistribution.setText("分布区域: " + locality);
+    }
 
     private void loadBirdImage() {
         BirdApiService apiService = RetrofitClient.getApiService();
-        // 已修正：使用正确的参数调用 getBirdMedia
         apiService.getBirdMedia(bird.getSpeciesCode(), "photo", "json", "zh", 1)
                 .enqueue(new Callback<List<BirdMedia>>() {
                     @Override
@@ -128,23 +155,12 @@ public class BirdDetailFragment extends Fragment {
                             String credit = "图片来源: " + media.getCreator() + " / " + media.getRightsHolder();
                             tvImageCredit.setText(credit);
                             tvImageCredit.setVisibility(View.VISIBLE);
-                        } else if (isAdded()) {
-                            // 使用默认图片
-                            Glide.with(requireContext())
-                                    .load(R.drawable.ic_bird_placeholder)
-                                    .into(ivBirdImage);
-                            tvImageCredit.setVisibility(View.GONE);
                         }
                     }
 
                     @Override
                     public void onFailure(Call<List<BirdMedia>> call, Throwable t) {
                         if (isAdded()) {
-                            // 使用默认图片
-                            Glide.with(requireContext())
-                                    .load(R.drawable.ic_bird_placeholder)
-                                    .into(ivBirdImage);
-                            tvImageCredit.setVisibility(View.GONE);
                             showToast("获取图片失败: " + t.getMessage());
                         }
                     }
@@ -164,7 +180,7 @@ public class BirdDetailFragment extends Fragment {
                             // 使用第一个描述
                             BirdDescription.DescriptionItem descriptionItem = response.body().getDescriptions().get(0);
                             tvDescription.setText(descriptionItem.getDescription());
-                        } else {
+                        } else if (isAdded()) {
                             // 使用默认描述
                             String defaultDescription = generateDefaultDescription(bird);
                             tvDescription.setText(defaultDescription);
@@ -177,7 +193,6 @@ public class BirdDetailFragment extends Fragment {
                             // 使用默认描述
                             String defaultDescription = generateDefaultDescription(bird);
                             tvDescription.setText(defaultDescription);
-                            showToast("获取描述失败: " + t.getMessage());
                         }
                     }
                 });
@@ -186,8 +201,8 @@ public class BirdDetailFragment extends Fragment {
     private String generateDefaultDescription(Bird bird) {
         StringBuilder description = new StringBuilder();
         description.append(bird.getCommonName()).append(" (").append(bird.getScientificName()).append(") ")
-                .append("是").append(bird.getOrder()).append("目，")
-                .append(bird.getFamilyCommonName()).append("科的鸟类。\n\n");
+                .append("是").append(bird.getOrder() != null ? bird.getOrder() : "未知").append("目，")
+                .append(bird.getFamilyCommonName() != null ? bird.getFamilyCommonName() : "未知").append("科的鸟类。\n\n");
 
         if (bird.getLocality() != null && !bird.getLocality().isEmpty()) {
             description.append("这种鸟常见于").append(bird.getLocality()).append("，喜欢栖息在森林、湿地或草原等环境中。\n\n");

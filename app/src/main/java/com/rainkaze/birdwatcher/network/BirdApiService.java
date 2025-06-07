@@ -8,7 +8,6 @@ import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.http.GET;
-import retrofit2.http.Header;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
 
@@ -27,21 +26,14 @@ public interface BirdApiService {
             @Path("speciesCode") String speciesCode
     );
 
-    // 获取鸟类分类信息
-    @GET("ref/taxonomy/ebird")
-    Call<List<Bird>> getTaxonomy(
-            @Query("cat") String category,
-            @Query("fmt") String format
-    );
-
-    // 搜索鸟类 (已修正：使用 @Query("q") 注解)
+    // 搜索鸟类
     @GET("ref/taxon/find")
     Call<List<Bird>> searchBirds(
             @Query("q") String query,
             @Query("locale") String locale
     );
 
-    // 获取鸟类图片 (已修正：使用正确的端点和参数)
+    // 获取鸟类图片
     @GET("ref/media/find")
     Call<List<BirdMedia>> getBirdMedia(
             @Query("speciesCode") String speciesCode,

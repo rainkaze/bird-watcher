@@ -169,14 +169,14 @@ public class AddEditRecordActivity extends AppCompatActivity {
 
         BirdRecord record = new BirdRecord();
         if (currentRecordId != -1) {
-            record.setId(currentRecordId); // 如果是编辑，设置ID
+ //           record.setId(currentRecordId); // 如果是编辑，设置ID
         }
-        record.setTitle(title);
-        record.setBirdName(birdName);
-        record.setScientificName(scientificName);
-        record.setContent(content);
-        record.setDetailedLocation(detailedLocation);
-        record.setRecordDate(new Date()); //或提供日期选择器
+//        record.setTitle(title);
+//        record.setBirdName(birdName);
+//        record.setScientificName(scientificName);
+//        record.setContent(content);
+//        record.setDetailedLocation(detailedLocation);
+//        record.setRecordDate(new Date()); //或提供日期选择器
         // record.setPhotoUris(currentPhotoUris);
         // record.setAudioUri(currentAudioUri);
         // record.setLatitude(latitude);
