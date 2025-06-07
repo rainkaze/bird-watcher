@@ -5,7 +5,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- 修改 SearchView 的类型 -->
     <androidx.appcompat.widget.SearchView
         android:id="@+id/search_view"
         android:layout_width="0dp"
@@ -14,7 +13,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:queryHint="搜索鸟类名称..." />
+        android:queryHint="搜索鸟类名称..."
+        app:iconifiedByDefault="false" />
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipe_refresh"
@@ -32,7 +32,8 @@
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_birds"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" />
+                android:layout_height="match_parent"
+                android:visibility="gone" />
 
             <TextView
                 android:id="@+id/tv_empty_state"
@@ -40,9 +41,9 @@
                 android:layout_height="match_parent"
                 android:gravity="center"
                 android:text="暂无鸟类数据\n下拉刷新试试"
-                android:visibility="gone"
                 android:textSize="18sp"
-                android:padding="32dp"/>
+                android:padding="32dp"
+                android:visibility="visible"/>
         </FrameLayout>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
