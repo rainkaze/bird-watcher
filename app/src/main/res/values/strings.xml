@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">BirdWatcher</string>
+    <string name="message_no_bird_data">无法从服务器获取鸟类数据。</string>
+    <string name="bird_icon">bird_icon</string>
 </resources>

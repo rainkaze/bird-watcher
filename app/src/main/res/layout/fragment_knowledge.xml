@@ -1,15 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    android:background="#F5F5F5"
+    tools:context=".fragment.KnowledgeFragment">
 
-    <TextView
-        android:layout_width="wrap_content"
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appbar_knowledge"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:text="这是科普" />
+        android:background="?attr/colorPrimary"
+        app:elevation="4dp">
 
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar_knowledge"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:title="鸟类百科"
+            app:titleTextColor="@android:color/white"
+            app:layout_scrollFlags="scroll|enterAlways">
 
-</RelativeLayout>
+            <androidx.appcompat.widget.SearchView
+                android:id="@+id/search_view_knowledge"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:theme="@style/AppSearchViewStyle"
+                app:queryHint="搜索鸟类中文名..."
+                app:iconifiedByDefault="false"
+                app:searchIcon="@drawable/ic_search"
+                app:closeIcon="@drawable/ic_close" />
+
+        </androidx.appcompat.widget.Toolbar>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_knowledge"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:padding="8dp"
+            android:visibility="gone"
+            tools:listitem="@layout/item_bird_knowledge"
+            tools:visibility="visible" />
+
+        <ProgressBar
+            android:id="@+id/progress_bar_knowledge"
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="visible" />
+
+        <TextView
+            android:id="@+id/tv_empty_knowledge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:text="@string/message_no_bird_data"
+            android:textAppearance="?attr/textAppearanceBodyLarge"
+            android:textColor="@android:color/darker_gray"
+            android:visibility="gone"
+            tools:visibility="visible" />
+
+    </FrameLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
