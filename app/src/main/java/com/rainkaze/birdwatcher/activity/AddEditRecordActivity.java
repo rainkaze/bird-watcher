@@ -61,6 +61,10 @@ import java.util.Objects;
 public class AddEditRecordActivity extends AppCompatActivity {
 
     public static final String EXTRA_RECORD_ID = "com.rainkaze.birdwatcher.EXTRA_RECORD_ID";
+    // 修改点 1: 定义用于接收数据的常量键
+    public static final String EXTRA_BIRD_NAME_FROM_RECOGNITION = "BIRD_NAME_FROM_RECOGNITION";
+    public static final String EXTRA_IMAGE_URI_FROM_RECOGNITION = "IMAGE_URI_FROM_RECOGNITION";
+
     private static final String TAG = "AddEditRecordActivity";
     private static final int REQUEST_PERMISSIONS_CODE = 101;
     private static final int REQUEST_LOCATION_PERMISSION_CODE = 102;
@@ -68,10 +72,8 @@ public class AddEditRecordActivity extends AppCompatActivity {
 
     private MaterialButton btnRecordAudio;
 
-    // 修改点: 声明新的经纬度输入框和布局
     private TextInputEditText etTitle, etBirdName, etScientificName, etContent, etDetailedLocation, etLatitude, etLongitude;
     private TextInputLayout tilTitle, tilBirdName, tilLatitude, tilLongitude;
-    // 修改点: 移除了旧的 tvLocationInfo
     private TextView tvDateInfo, tvAudioFileName;
     private Button btnGetLocation, btnAddPhotos;
     private ImageButton btnPlayAudio, btnDeleteAudio;
@@ -118,24 +120,42 @@ public class AddEditRecordActivity extends AppCompatActivity {
         setupPhotoPreviewRecyclerView();
         initLocationClient();
 
+        // 修改点 2: 重构 onCreate 的逻辑以处理不同启动情况
         Intent intent = getIntent();
         if (intent.hasExtra(EXTRA_RECORD_ID)) {
+            // 编辑模式: 加载现有记录
             currentRecordId = intent.getLongExtra(EXTRA_RECORD_ID, -1);
             if (currentRecordId != -1) {
                 setTitle("编辑记录");
                 loadRecordData(currentRecordId);
             } else {
+                // 理论上不应发生，作为备用
                 setTitle("添加新纪录");
-                currentRecord = new BirdRecord();
-                currentRecord.setRecordDate(new Date());
-                updateDateDisplay();
+                initializeNewRecord();
             }
         } else {
+            // 添加模式: 初始化新记录
             setTitle("添加新纪录");
-            currentRecord = new BirdRecord();
-            currentRecord.setRecordDate(new Date());
-            updateDateDisplay();
+            initializeNewRecord();
+
+            // 检查是否从识别结果跳转而来
+            if (intent.hasExtra(EXTRA_BIRD_NAME_FROM_RECOGNITION)) {
+                String birdName = intent.getStringExtra(EXTRA_BIRD_NAME_FROM_RECOGNITION);
+                etBirdName.setText(birdName);
+            }
+            if (intent.hasExtra(EXTRA_IMAGE_URI_FROM_RECOGNITION)) {
+                String imageUriString = intent.getStringExtra(EXTRA_IMAGE_URI_FROM_RECOGNITION);
+                Uri sourceUri = Uri.parse(imageUriString);
+                // 将图片复制到应用永久存储区，以防源文件被删除
+                Uri permanentUri = saveImageFromUriToAppStorage(sourceUri);
+                if (permanentUri != null) {
+                    currentPhotoUris.add(permanentUri.toString());
+                    photoPreviewAdapter.notifyDataSetChanged();
+                    rvPhotosPreview.setVisibility(currentPhotoUris.isEmpty() ? View.GONE : View.VISIBLE);
+                }
+            }
         }
+
 
         btnGetLocation.setOnClickListener(v -> getLocation());
         btnAddPhotos.setOnClickListener(v -> showPhotoSourceDialog());
@@ -144,6 +164,13 @@ public class AddEditRecordActivity extends AppCompatActivity {
         btnDeleteAudio.setOnClickListener(v -> deleteAudioFile());
 
         checkAndRequestPermissions();
+    }
+
+    // 修改点 3: 添加一个辅助方法来初始化新记录
+    private void initializeNewRecord() {
+        currentRecord = new BirdRecord();
+        currentRecord.setRecordDate(new Date());
+        updateDateDisplay();
     }
 
     private void initializeViews() {
@@ -163,7 +190,6 @@ public class AddEditRecordActivity extends AppCompatActivity {
         btnPlayAudio = findViewById(R.id.btn_play_audio);
         btnDeleteAudio = findViewById(R.id.btn_delete_audio);
 
-        // 修改点: 初始化新的经纬度视图
         etLatitude = findViewById(R.id.et_latitude);
         etLongitude = findViewById(R.id.et_longitude);
         tilLatitude = findViewById(R.id.til_latitude);
@@ -190,7 +216,6 @@ public class AddEditRecordActivity extends AppCompatActivity {
             etContent.setText(currentRecord.getContent());
             etDetailedLocation.setText(currentRecord.getDetailedLocation());
 
-            // 修改点: 将经纬度加载到新的输入框
             if (!Double.isNaN(currentRecord.getLatitude())) {
                 etLatitude.setText(String.format(Locale.US, "%.6f", currentRecord.getLatitude()));
             }
@@ -286,6 +311,7 @@ public class AddEditRecordActivity extends AppCompatActivity {
         }
     }
 
+
     private void setupPhotoPreviewRecyclerView() {
         photoPreviewAdapter = new PhotoPreviewAdapter(this, currentPhotoUris, (position, uriString) -> {
             currentPhotoUris.remove(position);
@@ -380,10 +406,8 @@ public class AddEditRecordActivity extends AppCompatActivity {
                         final String address = location.getAddrStr();
 
                         runOnUiThread(() -> {
-                            // 修改点: 将定位结果填充到可编辑的输入框
                             etLatitude.setText(String.format(Locale.US, "%.6f", latitude));
                             etLongitude.setText(String.format(Locale.US, "%.6f", longitude));
-
                             if (currentRecord != null && !TextUtils.isEmpty(address) && TextUtils.isEmpty(etDetailedLocation.getText())) {
                                 etDetailedLocation.setText(address);
                             }
@@ -609,7 +633,6 @@ public class AddEditRecordActivity extends AppCompatActivity {
             tilBirdName.setError(null);
         }
 
-        // 修改点: 新增 - 读取并校验经纬度输入
         tilLatitude.setError(null);
         tilLongitude.setError(null);
         double latitude = Double.NaN;
@@ -657,11 +680,8 @@ public class AddEditRecordActivity extends AppCompatActivity {
         currentRecord.setScientificName(Objects.requireNonNull(etScientificName.getText()).toString().trim());
         currentRecord.setContent(Objects.requireNonNull(etContent.getText()).toString().trim());
         currentRecord.setDetailedLocation(Objects.requireNonNull(etDetailedLocation.getText()).toString().trim());
-
-        // 修改点: 设置从输入框解析出的经纬度
         currentRecord.setLatitude(latitude);
         currentRecord.setLongitude(longitude);
-
         currentRecord.setPhotoUris(new ArrayList<>(currentPhotoUris));
         currentRecord.setAudioUri(currentAudioUri);
 
