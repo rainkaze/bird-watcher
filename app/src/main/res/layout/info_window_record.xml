@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="240dp"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/bg_infowindow"
+    android:padding="12dp">
+
+    <TextView
+        android:id="@+id/tv_info_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="?attr/colorPrimary"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:maxLines="2"
+        android:ellipsize="end"
+        tools:text="一次精彩的白鹭观察活动" />
+
+    <TextView
+        android:id="@+id/tv_info_bird_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:textColor="?android:attr/textColorSecondary"
+        android:textSize="14sp"
+        tools:text="鸟类: 白鹭" />
+
+    <TextView
+        android:id="@+id/tv_info_date_location"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:textColor="#666666"
+        android:textSize="12sp"
+        android:maxLines="2"
+        android:ellipsize="end"
+        tools:text="2024-05-21 | 某某湿地公园北侧" />
+</LinearLayout>
