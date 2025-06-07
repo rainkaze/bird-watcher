@@ -10,6 +10,7 @@ import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.rainkaze.birdwatcher.model.BirdRecord;
+import com.rainkaze.birdwatcher.model.BirdStat;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -266,5 +267,31 @@ public class BirdRecordDao {
         }
 
         return record;
+    }
+
+    /**
+     * 获取鸟类统计信息，按记录数量降序排列。
+     * @return BirdStat 对象的列表，包含鸟名和对应的记录数。
+     */
+    public List<BirdStat> getBirdStats() {
+        if (database == null || !database.isOpen()) {
+            open();
+        }
+        List<com.rainkaze.birdwatcher.model.BirdStat> stats = new ArrayList<>();
+        String query = "SELECT " + BirdRecordDbHelper.COLUMN_BIRD_NAME + ", COUNT(" + BirdRecordDbHelper.COLUMN_ID + ") as count FROM " +
+                BirdRecordDbHelper.TABLE_RECORDS + " GROUP BY " + BirdRecordDbHelper.COLUMN_BIRD_NAME + " ORDER BY count DESC";
+
+        Cursor cursor = database.rawQuery(query, null);
+
+        if (cursor != null) {
+            while (cursor.moveToNext()) {
+                String birdName = cursor.getString(cursor.getColumnIndexOrThrow(BirdRecordDbHelper.COLUMN_BIRD_NAME));
+                int count = cursor.getInt(cursor.getColumnIndexOrThrow("count"));
+                stats.add(new com.rainkaze.birdwatcher.model.BirdStat(birdName, count));
+            }
+            cursor.close();
+        }
+        Log.d(TAG, "Fetched " + stats.size() + " bird stats.");
+        return stats;
     }
 }

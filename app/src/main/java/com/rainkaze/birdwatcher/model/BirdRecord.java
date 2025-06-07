@@ -103,4 +103,7 @@ public class BirdRecord implements Parcelable {
                 ", recordDate=" + getRecordDate() + // 使用getter
                 '}';
     }
+
+
+
 }
