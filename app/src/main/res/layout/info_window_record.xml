@@ -41,7 +41,20 @@
             android:layout_marginTop="4dp"
             android:textColor="?android:attr/textColorSecondary"
             android:textSize="14sp"
-            tools:text="鸟类: 白鹭" />
+            tools:text="鸟类: 白鹭 (Ardea alba)" />
+
+        <TextView
+            android:id="@+id/tv_info_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textColor="#555555"
+            android:textSize="13sp"
+            android:maxLines="3"
+            android:ellipsize="end"
+            android:visibility="gone"
+            tools:visibility="visible"
+            tools:text="在湿地公园的北侧，芦苇荡中发现。姿态优美，正在觅食。周围环境安静，光线良好，适合拍照。"/>
 
         <TextView
             android:id="@+id/tv_info_date_location"

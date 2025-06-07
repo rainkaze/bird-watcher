@@ -62,6 +62,7 @@
             android:layout_marginTop="8dp"
             android:background="@drawable/bg_rounded_white"
             android:visibility="gone"
+            tools:listitem="@layout/item_record_search"
             tools:visibility="visible"/>
 
     </LinearLayout>
@@ -70,13 +71,16 @@
         android:id="@+id/fab_toggle_records"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
         android:layout_toStartOf="@id/btn_my_location"
-        android:layout_alignTop="@id/btn_my_location"
+        android:layout_alignWithParentIfMissing="true"
+        android:layout_marginBottom="16dp"
         android:layout_marginEnd="16dp"
-        app:fabSize="mini"
+        app:fabSize="normal"
         android:src="@drawable/ic_layers"
         android:contentDescription="切换记录可见性"
         app:backgroundTint="@color/white"
+        app:tint="?attr/colorControlNormal"
         app:elevation="6dp" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -89,6 +93,7 @@
         android:src="@drawable/ic_my_location"
         android:contentDescription="@string/locate_me"
         app:backgroundTint="@color/white"
+        app:tint="?attr/colorPrimary"
         app:elevation="6dp" />
 
 </RelativeLayout>
