@@ -32,6 +32,11 @@ import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.baidu.location.BDAbstractLocationListener;
+import com.baidu.location.BDLocation;
+import com.baidu.location.LocationClient;
+import com.baidu.location.LocationClientOption;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.rainkaze.birdwatcher.R;
@@ -46,7 +51,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import com.google.android.material.button.MaterialButton; // 确保导入
 
 
 public class AddEditRecordActivity extends AppCompatActivity {
@@ -54,11 +58,10 @@ public class AddEditRecordActivity extends AppCompatActivity {
     public static final String EXTRA_RECORD_ID = "com.rainkaze.birdwatcher.EXTRA_RECORD_ID";
     private static final String TAG = "AddEditRecordActivity";
     private static final int REQUEST_PERMISSIONS_CODE = 101;
+    private static final int REQUEST_LOCATION_PERMISSION_CODE = 102;
     private static final int REQUEST_AUDIO_PERMISSION_CODE = 201;
 
-
     private MaterialButton btnRecordAudio;
-
 
     private TextInputEditText etTitle, etBirdName, etScientificName, etContent, etDetailedLocation;
     private TextInputLayout tilTitle, tilBirdName;
@@ -71,21 +74,24 @@ public class AddEditRecordActivity extends AppCompatActivity {
     private String currentAudioUri = null;
 
     private BirdRecordDao birdRecordDao;
-    private BirdRecord currentRecord; // 当前正在编辑的记录，如果是新增则为 null 或 new BirdRecord()
-    private long currentRecordId = -1; // -1 表示新增
+    private BirdRecord currentRecord;
+    private long currentRecordId = -1;
 
     private ActivityResultLauncher<Intent> pickMultipleImagesLauncher;
     private ActivityResultLauncher<Intent> takePictureLauncher;
-    private Uri tempPhotoUriForCamera; // 用于存储拍照时的临时URI
+    private Uri tempPhotoUriForCamera;
 
     private MediaRecorder mediaRecorder;
     private MediaPlayer mediaPlayer;
     private boolean isRecording = false;
     private boolean isPlayingAudio = false;
-    private File audioFile; // 录音文件
+    private File audioFile;
 
     private final SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
 
+    // --- 定位相关变量 ---
+    private LocationClient mLocationClient;
+    private BDAbstractLocationListener mBaiduLocationListener; // **修正1：将监听器保存为成员变量**
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,12 +104,13 @@ public class AddEditRecordActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_close); // 你需要一个关闭图标 ic_close.xml
+            getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_close);
         }
 
         initializeViews();
         setupPhotoPickerLaunchers();
         setupPhotoPreviewRecyclerView();
+        initLocationClient();
 
         Intent intent = getIntent();
         if (intent.hasExtra(EXTRA_RECORD_ID)) {
@@ -113,14 +120,14 @@ public class AddEditRecordActivity extends AppCompatActivity {
                 loadRecordData(currentRecordId);
             } else {
                 setTitle("添加新纪录");
-                currentRecord = new BirdRecord(); // 新记录
-                currentRecord.setRecordDate(new Date()); // 默认为当前时间
+                currentRecord = new BirdRecord();
+                currentRecord.setRecordDate(new Date());
                 updateDateDisplay();
             }
         } else {
             setTitle("添加新纪录");
-            currentRecord = new BirdRecord(); // 新记录
-            currentRecord.setRecordDate(new Date()); // 默认为当前时间
+            currentRecord = new BirdRecord();
+            currentRecord.setRecordDate(new Date());
             updateDateDisplay();
         }
 
@@ -132,6 +139,8 @@ public class AddEditRecordActivity extends AppCompatActivity {
 
         checkAndRequestPermissions();
     }
+
+    // ... 其他方法保持不变 ...
 
     private void initializeViews() {
         etTitle = findViewById(R.id.et_title);
@@ -190,7 +199,7 @@ public class AddEditRecordActivity extends AppCompatActivity {
 
         } else {
             Toast.makeText(this, "无法加载记录详情", Toast.LENGTH_SHORT).show();
-            finish(); // 如果记录加载失败，关闭Activity
+            finish();
         }
     }
 
@@ -233,9 +242,8 @@ public class AddEditRecordActivity extends AppCompatActivity {
 
     private void setupPhotoPreviewRecyclerView() {
         photoPreviewAdapter = new PhotoPreviewAdapter(this, currentPhotoUris, (position, uriString) -> {
-            // 处理照片移除
             currentPhotoUris.remove(position);
-            photoPreviewAdapter.removeItem(position); // 通知适配器内部也移除
+            photoPreviewAdapter.removeItem(position);
             if (currentPhotoUris.isEmpty()) {
                 rvPhotosPreview.setVisibility(View.GONE);
             }
@@ -262,9 +270,8 @@ public class AddEditRecordActivity extends AppCompatActivity {
         builder.show();
     }
 
-
     private void dispatchPickMultipleImagesIntent() {
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT); // 或者 Intent.ACTION_OPEN_DOCUMENT
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("image/*");
         intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
         pickMultipleImagesLauncher.launch(Intent.createChooser(intent, "选择照片"));
@@ -299,18 +306,88 @@ public class AddEditRecordActivity extends AppCompatActivity {
         return image;
     }
 
+    private void initLocationClient() {
+        try {
+            LocationClient.setAgreePrivacy(true);
+            mLocationClient = new LocationClient(getApplicationContext());
 
-    private void getLocation() {
-        // TODO: 实现调用百度地图API获取位置逻辑
-        // 成功后更新 tvLocationInfo 和 currentRecord 的经纬度字段
-        // 示例：
-        // currentRecord.setLatitude(123.456);
-        // currentRecord.setLongitude(78.910);
-        // tvLocationInfo.setText("纬度: 123.456, 经度: 78.910 (模拟)");
-        Toast.makeText(this, "获取位置功能待实现 (请完善百度地图API调用)", Toast.LENGTH_LONG).show();
+            LocationClientOption option = new LocationClientOption();
+            option.setOpenGps(true);
+            option.setCoorType("bd09ll");
+            option.setScanSpan(0);
+            option.setLocationMode(LocationClientOption.LocationMode.Hight_Accuracy);
+            option.setIsNeedAddress(true);
+            mLocationClient.setLocOption(option);
+
+            // **修正2：将创建的监听器实例赋值给成员变量**
+            mBaiduLocationListener = new BDAbstractLocationListener() {
+                @Override
+                public void onReceiveLocation(BDLocation location) {
+                    runOnUiThread(() -> {
+                        btnGetLocation.setText("获取当前位置");
+                        btnGetLocation.setEnabled(true);
+                    });
+
+                    if (location != null && (location.getLocType() == BDLocation.TypeGpsLocation ||
+                            location.getLocType() == BDLocation.TypeNetWorkLocation)) {
+                        final double latitude = location.getLatitude();
+                        final double longitude = location.getLongitude();
+                        final String address = location.getAddrStr();
+
+                        runOnUiThread(() -> {
+                            if (currentRecord != null) {
+                                currentRecord.setLatitude(latitude);
+                                currentRecord.setLongitude(longitude);
+                                if (!TextUtils.isEmpty(address) && TextUtils.isEmpty(etDetailedLocation.getText())) {
+                                    etDetailedLocation.setText(address);
+                                }
+                            }
+                            tvLocationInfo.setText(String.format(Locale.US, "纬度: %.6f, 经度: %.6f", latitude, longitude));
+                            Toast.makeText(AddEditRecordActivity.this, "位置已获取", Toast.LENGTH_SHORT).show();
+                        });
+
+                    } else {
+                        runOnUiThread(() -> {
+                            Toast.makeText(AddEditRecordActivity.this, "获取位置失败，请检查网络和GPS", Toast.LENGTH_LONG).show();
+                            Log.e(TAG, "Location failed, error code: " + (location != null ? location.getLocType() : "location is null"));
+                        });
+                    }
+                    if(mLocationClient != null && mLocationClient.isStarted()){
+                        mLocationClient.stop();
+                    }
+                }
+            };
+            // 使用成员变量进行注册
+            mLocationClient.registerLocationListener(mBaiduLocationListener);
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to initialize LocationClient", e);
+            Toast.makeText(this, "定位服务初始化失败", Toast.LENGTH_SHORT).show();
+        }
     }
 
-    // --- 录音相关 ---
+    private void getLocation() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
+                    REQUEST_LOCATION_PERMISSION_CODE);
+        } else {
+            startLocationRequest();
+        }
+    }
+
+    private void startLocationRequest() {
+        if (mLocationClient != null) {
+            if (mLocationClient.isStarted()) {
+                mLocationClient.stop();
+            }
+            btnGetLocation.setText("获取中...");
+            btnGetLocation.setEnabled(false);
+            mLocationClient.start();
+        } else {
+            Toast.makeText(this, "定位服务异常，请重启应用", Toast.LENGTH_SHORT).show();
+        }
+    }
+
     private void toggleRecording() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -327,9 +404,9 @@ public class AddEditRecordActivity extends AppCompatActivity {
 
     private void startRecording() {
         if (mediaPlayer != null && mediaPlayer.isPlaying()) {
-            stopPlayingAudio(); // 如果正在播放，先停止
+            stopPlayingAudio();
         }
-        deleteAudioFile(); // 开始新录音前删除旧的（如果存在）
+        deleteAudioFile();
 
         try {
             File audioDir = new File(getExternalCacheDir(), "audiorecords");
@@ -349,7 +426,7 @@ public class AddEditRecordActivity extends AppCompatActivity {
             mediaRecorder.start();
             isRecording = true;
             btnRecordAudio.setText("停止录音");
-            btnRecordAudio.setIcon(ContextCompat.getDrawable(this, R.drawable.ic_cancel)); // 你需要一个停止图标
+            btnRecordAudio.setIcon(ContextCompat.getDrawable(this, R.drawable.ic_cancel));
             Toast.makeText(this, "录音开始...", Toast.LENGTH_SHORT).show();
             updateAudioUI();
         } catch (IOException e) {
@@ -366,9 +443,8 @@ public class AddEditRecordActivity extends AppCompatActivity {
                 mediaRecorder.stop();
             } catch (RuntimeException e) {
                 Log.w(TAG, "RuntimeException on stopping MediaRecorder: " + e.getMessage());
-                // 文件可能已损坏或未正确创建
                 if (audioFile != null && audioFile.exists()) {
-                    audioFile.delete(); // 删除可能不完整的录音
+                    audioFile.delete();
                 }
                 currentAudioUri = null;
             } finally {
@@ -426,7 +502,7 @@ public class AddEditRecordActivity extends AppCompatActivity {
     }
 
     private void deleteAudioFile() {
-        stopPlayingAudio(); // 确保停止播放
+        stopPlayingAudio();
         if (!TextUtils.isEmpty(currentAudioUri)) {
             File fileToDelete = new File(Uri.parse(currentAudioUri).getPath());
             if (fileToDelete.exists()) {
@@ -444,24 +520,24 @@ public class AddEditRecordActivity extends AppCompatActivity {
     private void updateAudioUI() {
         if (!TextUtils.isEmpty(currentAudioUri)) {
             Uri audioUri = Uri.parse(currentAudioUri);
-            String path = audioUri.getPath(); // 从 Uri 获取路径
+            String path = audioUri.getPath();
             if (path != null) {
                 File audioFileFromUri = new File(path);
                 if (audioFileFromUri.exists()) {
-                    tvAudioFileName.setText(audioFileFromUri.getName()); // 从 File 对象获取文件名
+                    tvAudioFileName.setText(audioFileFromUri.getName());
                     btnPlayAudio.setVisibility(View.VISIBLE);
                     btnDeleteAudio.setVisibility(View.VISIBLE);
                 } else {
                     tvAudioFileName.setText("音频文件不存在");
                     btnPlayAudio.setVisibility(View.GONE);
                     btnDeleteAudio.setVisibility(View.GONE);
-                    currentAudioUri = null; // 如果文件不存在，清空URI记录
+                    currentAudioUri = null;
                 }
             } else {
                 tvAudioFileName.setText("无效的音频路径");
                 btnPlayAudio.setVisibility(View.GONE);
                 btnDeleteAudio.setVisibility(View.GONE);
-                currentAudioUri = null; // 如果路径无效，清空URI记录
+                currentAudioUri = null;
             }
         } else {
             tvAudioFileName.setText("未录制音频");
@@ -469,7 +545,6 @@ public class AddEditRecordActivity extends AppCompatActivity {
             btnDeleteAudio.setVisibility(View.GONE);
         }
     }
-
 
     private void saveRecord() {
         String title = etTitle.getText().toString().trim();
@@ -491,9 +566,7 @@ public class AddEditRecordActivity extends AppCompatActivity {
             tilBirdName.setError(null);
         }
 
-        // 如果是新增记录，currentRecord 已经通过 new BirdRecord() 初始化
-        // 如果是编辑记录，currentRecord 已经从数据库加载
-        if (currentRecord == null) { // 双重保险
+        if (currentRecord == null) {
             currentRecord = new BirdRecord();
         }
 
@@ -502,30 +575,28 @@ public class AddEditRecordActivity extends AppCompatActivity {
         currentRecord.setScientificName(etScientificName.getText().toString().trim());
         currentRecord.setContent(etContent.getText().toString().trim());
         currentRecord.setDetailedLocation(etDetailedLocation.getText().toString().trim());
-        // 经纬度在 getLocation() 中设置
-        currentRecord.setPhotoUris(new ArrayList<>(currentPhotoUris)); // 确保是新的List实例
+        currentRecord.setPhotoUris(new ArrayList<>(currentPhotoUris));
         currentRecord.setAudioUri(currentAudioUri);
 
-        // 日期：如果是新记录，在onCreate时已设置；如果是编辑，则保持原有日期，除非提供修改日期的功能
-        if (currentRecord.getRecordDateTimestamp() == 0) { // 确保新记录有日期
+        if (currentRecord.getRecordDateTimestamp() == 0) {
             currentRecord.setRecordDate(new Date());
         }
 
 
         birdRecordDao.open();
         long resultId;
-        if (currentRecord.getId() != -1 && currentRecordId != -1) { // 编辑模式
+        if (currentRecord.getId() != -1 && currentRecordId != -1) {
             resultId = birdRecordDao.updateRecord(currentRecord);
-            if (resultId > 0) { // updateRecord 返回受影响行数
+            if (resultId > 0) {
                 Toast.makeText(this, "记录已更新", Toast.LENGTH_LONG).show();
                 setResult(Activity.RESULT_OK);
                 finish();
             } else {
                 Toast.makeText(this, "更新记录失败", Toast.LENGTH_LONG).show();
             }
-        } else { // 新增模式
+        } else {
             resultId = birdRecordDao.addRecord(currentRecord);
-            if (resultId != -1) { // addRecord 返回新插入的 ID
+            if (resultId != -1) {
                 Toast.makeText(this, "记录已保存", Toast.LENGTH_LONG).show();
                 setResult(Activity.RESULT_OK);
                 finish();
@@ -549,8 +620,7 @@ public class AddEditRecordActivity extends AppCompatActivity {
             saveRecord();
             return true;
         } else if (itemId == android.R.id.home) {
-            // 处理向上导航/关闭按钮
-            onBackPressed(); // 或 finish();
+            onBackPressed();
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -558,20 +628,25 @@ public class AddEditRecordActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        // 可以添加一个对话框询问是否放弃更改，如果内容已更改
-        // 这里简单地直接返回
-        if (isRecording) { // 如果正在录音，先停止
+        if (isRecording) {
             stopRecording();
         }
-        if (isPlayingAudio) { // 如果正在播放，先停止
+        if (isPlayingAudio) {
             stopPlayingAudio();
         }
         super.onBackPressed();
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
+    protected void onDestroy() {
+        super.onDestroy();
+        if (mLocationClient != null) {
+            // **修正3：使用具体的监听器实例来注销**
+            if (mBaiduLocationListener != null) {
+                mLocationClient.unRegisterLocationListener(mBaiduLocationListener);
+            }
+            mLocationClient.stop();
+        }
         if (mediaRecorder != null) {
             mediaRecorder.release();
             mediaRecorder = null;
@@ -582,35 +657,24 @@ public class AddEditRecordActivity extends AppCompatActivity {
         }
     }
 
-
-    // --- 权限处理 ---
     private void checkAndRequestPermissions() {
         List<String> permissionsNeeded = new ArrayList<>();
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             permissionsNeeded.add(Manifest.permission.CAMERA);
         }
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            // 对于 API 33+，使用 READ_MEDIA_IMAGES
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-                if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES) != PackageManager.PERMISSION_GRANTED) {
-                    permissionsNeeded.add(Manifest.permission.READ_MEDIA_IMAGES);
-                }
-            } else {
-                if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                    permissionsNeeded.add(Manifest.permission.READ_EXTERNAL_STORAGE);
-                }
-                // WRITE_EXTERNAL_STORAGE 在 API 29 以下可能需要用于创建文件
-                if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.Q) {
-                    if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                        permissionsNeeded.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
-                    }
-                }
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES) != PackageManager.PERMISSION_GRANTED) {
+                permissionsNeeded.add(Manifest.permission.READ_MEDIA_IMAGES);
+            }
+        } else {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                permissionsNeeded.add(Manifest.permission.READ_EXTERNAL_STORAGE);
             }
         }
-        // 录音权限在点击录音按钮时单独请求，或者也可以在这里一起请求
-        // if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-        //     permissionsNeeded.add(Manifest.permission.RECORD_AUDIO);
-        // }
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            permissionsNeeded.add(Manifest.permission.ACCESS_FINE_LOCATION);
+        }
 
         if (!permissionsNeeded.isEmpty()) {
             ActivityCompat.requestPermissions(this, permissionsNeeded.toArray(new String[0]), REQUEST_PERMISSIONS_CODE);
@@ -631,9 +695,14 @@ public class AddEditRecordActivity extends AppCompatActivity {
             if (!allGranted) {
                 Toast.makeText(this, "部分功能可能因权限不足而无法使用", Toast.LENGTH_LONG).show();
             }
+        } else if (requestCode == REQUEST_LOCATION_PERMISSION_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "定位权限已获取，请再次点击按钮", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "定位权限被拒绝", Toast.LENGTH_SHORT).show();
+            }
         } else if (requestCode == REQUEST_AUDIO_PERMISSION_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // 录音权限已授予，可以开始录音
                 startRecording();
             } else {
                 Toast.makeText(this, "录音权限被拒绝", Toast.LENGTH_SHORT).show();
