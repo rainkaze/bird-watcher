@@ -4,26 +4,83 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#F5F5F5"
     tools:context=".fragment.RecordFragment">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_records"
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appbar_record"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/colorPrimary"
+        app:elevation="0dp">
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_margin="16dp"
+            app:cardCornerRadius="24dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="@android:color/white">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <androidx.appcompat.widget.SearchView
+                    android:id="@+id/search_view_records"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_toStartOf="@+id/btn_sort_records"
+                    android:theme="@style/AppSearchViewStyle"
+                    app:closeIcon="@drawable/ic_close"
+                    app:iconifiedByDefault="false"
+                    app:queryHint="搜索鸟类名称或地点..."
+                    app:searchIcon="@drawable/ic_search" />
+
+                <ImageButton
+                    android:id="@+id/btn_sort_records"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="排序"
+                    android:src="@drawable/ic_sort"
+                    app:tint="?attr/colorControlNormal" />
+
+            </RelativeLayout>
+
+        </androidx.cardview.widget.CardView>
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="8dp"
-        android:clipToPadding="false"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        tools:listitem="@layout/item_record" />
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-    <TextView
-        android:id="@+id/tv_empty_records"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="还没有任何记录，点击右下角按钮添加吧！"
-        android:textSize="16sp"
-        android:visibility="gone"
-        android:layout_gravity="center"
-        tools:visibility="visible"/>
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_records"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingTop="8dp"
+            android:paddingBottom="80dp"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            tools:listitem="@layout/item_record" />
+
+        <TextView
+            android:id="@+id/tv_empty_records"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:gravity="center"
+            android:text="还没有任何观鸟记录\n点击右下角按钮添加吧！"
+            android:textAppearance="?attr/textAppearanceBodyLarge"
+            android:textColor="@android:color/darker_gray"
+            android:visibility="gone"
+            tools:visibility="visible" />
+    </RelativeLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_add_record"
@@ -31,6 +88,12 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
-        app:srcCompat="@android:drawable/ic_input_add"
-        android:contentDescription="添加记录" />
+        android:contentDescription="添加新的观鸟记录"
+        app:backgroundTint="?attr/colorPrimary"
+        app:elevation="6dp"
+        app:fabSize="normal"
+        app:pressedTranslationZ="12dp"
+        app:srcCompat="@drawable/ic_add_fab"
+        app:tint="@android:color/white" />
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
