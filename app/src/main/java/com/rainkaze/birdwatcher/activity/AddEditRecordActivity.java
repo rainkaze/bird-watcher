@@ -2,6 +2,7 @@ package com.rainkaze.birdwatcher.activity;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
@@ -45,12 +46,16 @@ import com.rainkaze.birdwatcher.db.BirdRecordDao;
 import com.rainkaze.birdwatcher.model.BirdRecord;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 
 public class AddEditRecordActivity extends AppCompatActivity {
@@ -89,9 +94,8 @@ public class AddEditRecordActivity extends AppCompatActivity {
 
     private final SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
 
-    // --- 定位相关变量 ---
     private LocationClient mLocationClient;
-    private BDAbstractLocationListener mBaiduLocationListener; // **修正1：将监听器保存为成员变量**
+    private BDAbstractLocationListener mBaiduLocationListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -139,8 +143,6 @@ public class AddEditRecordActivity extends AppCompatActivity {
 
         checkAndRequestPermissions();
     }
-
-    // ... 其他方法保持不变 ...
 
     private void initializeViews() {
         etTitle = findViewById(R.id.et_title);
@@ -209,19 +211,30 @@ public class AddEditRecordActivity extends AppCompatActivity {
                 result -> {
                     if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
                         Intent data = result.getData();
+                        int newImageCount = 0;
                         if (data.getClipData() != null) { // 多选图片
                             int count = data.getClipData().getItemCount();
                             for (int i = 0; i < count; i++) {
                                 Uri imageUri = data.getClipData().getItemAt(i).getUri();
-                                currentPhotoUris.add(imageUri.toString());
+                                // 修改点: 复制图片到内部存储
+                                Uri permanentUri = saveImageFromUriToAppStorage(imageUri);
+                                if (permanentUri != null) {
+                                    currentPhotoUris.add(permanentUri.toString());
+                                    newImageCount++;
+                                }
                             }
                         } else if (data.getData() != null) { // 单选图片
                             Uri imageUri = data.getData();
-                            currentPhotoUris.add(imageUri.toString());
+                            // 修改点: 复制图片到内部存储
+                            Uri permanentUri = saveImageFromUriToAppStorage(imageUri);
+                            if (permanentUri != null) {
+                                currentPhotoUris.add(permanentUri.toString());
+                                newImageCount++;
+                            }
                         }
                         photoPreviewAdapter.notifyDataSetChanged();
                         rvPhotosPreview.setVisibility(View.VISIBLE);
-                        Toast.makeText(this, "已选择 " + currentPhotoUris.size() + " 张照片", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "成功添加 " + newImageCount + " 张照片", Toast.LENGTH_SHORT).show();
                     }
                 });
 
@@ -239,6 +252,35 @@ public class AddEditRecordActivity extends AppCompatActivity {
                 }
         );
     }
+
+    // 修改点: 新增核心方法，用于复制图片
+    private Uri saveImageFromUriToAppStorage(Uri sourceUri) {
+        if (sourceUri == null) return null;
+
+        try (InputStream inputStream = getContentResolver().openInputStream(sourceUri)) {
+            if (inputStream == null) return null;
+
+            File newFile = createImageFileForCamera(); // 复用创建文件的方法
+            try (OutputStream outputStream = new FileOutputStream(newFile)) {
+                byte[] buf = new byte[1024];
+                int len;
+                while ((len = inputStream.read(buf)) > 0) {
+                    outputStream.write(buf, 0, len);
+                }
+            }
+
+            // 返回新文件的、可通过FileProvider访问的URI
+            return FileProvider.getUriForFile(this,
+                    getApplicationContext().getPackageName() + ".fileprovider",
+                    newFile);
+
+        } catch (IOException e) {
+            Log.e(TAG, "Failed to copy image to app storage", e);
+            Toast.makeText(this, "保存照片失败", Toast.LENGTH_SHORT).show();
+            return null;
+        }
+    }
+
 
     private void setupPhotoPreviewRecyclerView() {
         photoPreviewAdapter = new PhotoPreviewAdapter(this, currentPhotoUris, (position, uriString) -> {
@@ -319,7 +361,6 @@ public class AddEditRecordActivity extends AppCompatActivity {
             option.setIsNeedAddress(true);
             mLocationClient.setLocOption(option);
 
-            // **修正2：将创建的监听器实例赋值给成员变量**
             mBaiduLocationListener = new BDAbstractLocationListener() {
                 @Override
                 public void onReceiveLocation(BDLocation location) {
@@ -357,7 +398,6 @@ public class AddEditRecordActivity extends AppCompatActivity {
                     }
                 }
             };
-            // 使用成员变量进行注册
             mLocationClient.registerLocationListener(mBaiduLocationListener);
         } catch (Exception e) {
             Log.e(TAG, "Failed to initialize LocationClient", e);
@@ -547,8 +587,8 @@ public class AddEditRecordActivity extends AppCompatActivity {
     }
 
     private void saveRecord() {
-        String title = etTitle.getText().toString().trim();
-        String birdName = etBirdName.getText().toString().trim();
+        String title = Objects.requireNonNull(etTitle.getText()).toString().trim();
+        String birdName = Objects.requireNonNull(etBirdName.getText()).toString().trim();
 
         if (title.isEmpty()) {
             tilTitle.setError("标题不能为空");
@@ -572,9 +612,9 @@ public class AddEditRecordActivity extends AppCompatActivity {
 
         currentRecord.setTitle(title);
         currentRecord.setBirdName(birdName);
-        currentRecord.setScientificName(etScientificName.getText().toString().trim());
-        currentRecord.setContent(etContent.getText().toString().trim());
-        currentRecord.setDetailedLocation(etDetailedLocation.getText().toString().trim());
+        currentRecord.setScientificName(Objects.requireNonNull(etScientificName.getText()).toString().trim());
+        currentRecord.setContent(Objects.requireNonNull(etContent.getText()).toString().trim());
+        currentRecord.setDetailedLocation(Objects.requireNonNull(etDetailedLocation.getText()).toString().trim());
         currentRecord.setPhotoUris(new ArrayList<>(currentPhotoUris));
         currentRecord.setAudioUri(currentAudioUri);
 
@@ -641,7 +681,6 @@ public class AddEditRecordActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         if (mLocationClient != null) {
-            // **修正3：使用具体的监听器实例来注销**
             if (mBaiduLocationListener != null) {
                 mLocationClient.unRegisterLocationListener(mBaiduLocationListener);
             }
@@ -685,16 +724,7 @@ public class AddEditRecordActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == REQUEST_PERMISSIONS_CODE) {
-            boolean allGranted = true;
-            for (int grantResult : grantResults) {
-                if (grantResult != PackageManager.PERMISSION_GRANTED) {
-                    allGranted = false;
-                    break;
-                }
-            }
-            if (!allGranted) {
-                Toast.makeText(this, "部分功能可能因权限不足而无法使用", Toast.LENGTH_LONG).show();
-            }
+            // 可以留空或给一个通用提示
         } else if (requestCode == REQUEST_LOCATION_PERMISSION_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(this, "定位权限已获取，请再次点击按钮", Toast.LENGTH_SHORT).show();
