@@ -68,9 +68,11 @@ public class AddEditRecordActivity extends AppCompatActivity {
 
     private MaterialButton btnRecordAudio;
 
-    private TextInputEditText etTitle, etBirdName, etScientificName, etContent, etDetailedLocation;
-    private TextInputLayout tilTitle, tilBirdName;
-    private TextView tvLocationInfo, tvDateInfo, tvAudioFileName;
+    // 修改点: 声明新的经纬度输入框和布局
+    private TextInputEditText etTitle, etBirdName, etScientificName, etContent, etDetailedLocation, etLatitude, etLongitude;
+    private TextInputLayout tilTitle, tilBirdName, tilLatitude, tilLongitude;
+    // 修改点: 移除了旧的 tvLocationInfo
+    private TextView tvDateInfo, tvAudioFileName;
     private Button btnGetLocation, btnAddPhotos;
     private ImageButton btnPlayAudio, btnDeleteAudio;
     private RecyclerView rvPhotosPreview;
@@ -152,7 +154,6 @@ public class AddEditRecordActivity extends AppCompatActivity {
         etScientificName = findViewById(R.id.et_scientific_name);
         etContent = findViewById(R.id.et_content);
         etDetailedLocation = findViewById(R.id.et_detailed_location);
-        tvLocationInfo = findViewById(R.id.tv_location_info);
         tvDateInfo = findViewById(R.id.tv_date_info);
         tvAudioFileName = findViewById(R.id.tv_audio_file_name);
         btnGetLocation = findViewById(R.id.btn_get_location);
@@ -161,6 +162,12 @@ public class AddEditRecordActivity extends AppCompatActivity {
         btnRecordAudio = findViewById(R.id.btn_record_audio);
         btnPlayAudio = findViewById(R.id.btn_play_audio);
         btnDeleteAudio = findViewById(R.id.btn_delete_audio);
+
+        // 修改点: 初始化新的经纬度视图
+        etLatitude = findViewById(R.id.et_latitude);
+        etLongitude = findViewById(R.id.et_longitude);
+        tilLatitude = findViewById(R.id.til_latitude);
+        tilLongitude = findViewById(R.id.til_longitude);
     }
 
     private void updateDateDisplay() {
@@ -183,10 +190,12 @@ public class AddEditRecordActivity extends AppCompatActivity {
             etContent.setText(currentRecord.getContent());
             etDetailedLocation.setText(currentRecord.getDetailedLocation());
 
-            if (!Double.isNaN(currentRecord.getLatitude()) && !Double.isNaN(currentRecord.getLongitude())) {
-                tvLocationInfo.setText(String.format(Locale.getDefault(), "纬度: %.6f, 经度: %.6f", currentRecord.getLatitude(), currentRecord.getLongitude()));
-            } else {
-                tvLocationInfo.setText("经纬度: 未记录");
+            // 修改点: 将经纬度加载到新的输入框
+            if (!Double.isNaN(currentRecord.getLatitude())) {
+                etLatitude.setText(String.format(Locale.US, "%.6f", currentRecord.getLatitude()));
+            }
+            if (!Double.isNaN(currentRecord.getLongitude())) {
+                etLongitude.setText(String.format(Locale.US, "%.6f", currentRecord.getLongitude()));
             }
 
             if (currentRecord.getPhotoUris() != null) {
@@ -216,7 +225,6 @@ public class AddEditRecordActivity extends AppCompatActivity {
                             int count = data.getClipData().getItemCount();
                             for (int i = 0; i < count; i++) {
                                 Uri imageUri = data.getClipData().getItemAt(i).getUri();
-                                // 修改点: 复制图片到内部存储
                                 Uri permanentUri = saveImageFromUriToAppStorage(imageUri);
                                 if (permanentUri != null) {
                                     currentPhotoUris.add(permanentUri.toString());
@@ -225,7 +233,6 @@ public class AddEditRecordActivity extends AppCompatActivity {
                             }
                         } else if (data.getData() != null) { // 单选图片
                             Uri imageUri = data.getData();
-                            // 修改点: 复制图片到内部存储
                             Uri permanentUri = saveImageFromUriToAppStorage(imageUri);
                             if (permanentUri != null) {
                                 currentPhotoUris.add(permanentUri.toString());
@@ -253,7 +260,6 @@ public class AddEditRecordActivity extends AppCompatActivity {
         );
     }
 
-    // 修改点: 新增核心方法，用于复制图片
     private Uri saveImageFromUriToAppStorage(Uri sourceUri) {
         if (sourceUri == null) return null;
 
@@ -269,7 +275,6 @@ public class AddEditRecordActivity extends AppCompatActivity {
                 }
             }
 
-            // 返回新文件的、可通过FileProvider访问的URI
             return FileProvider.getUriForFile(this,
                     getApplicationContext().getPackageName() + ".fileprovider",
                     newFile);
@@ -280,7 +285,6 @@ public class AddEditRecordActivity extends AppCompatActivity {
             return null;
         }
     }
-
 
     private void setupPhotoPreviewRecyclerView() {
         photoPreviewAdapter = new PhotoPreviewAdapter(this, currentPhotoUris, (position, uriString) -> {
@@ -376,14 +380,13 @@ public class AddEditRecordActivity extends AppCompatActivity {
                         final String address = location.getAddrStr();
 
                         runOnUiThread(() -> {
-                            if (currentRecord != null) {
-                                currentRecord.setLatitude(latitude);
-                                currentRecord.setLongitude(longitude);
-                                if (!TextUtils.isEmpty(address) && TextUtils.isEmpty(etDetailedLocation.getText())) {
-                                    etDetailedLocation.setText(address);
-                                }
+                            // 修改点: 将定位结果填充到可编辑的输入框
+                            etLatitude.setText(String.format(Locale.US, "%.6f", latitude));
+                            etLongitude.setText(String.format(Locale.US, "%.6f", longitude));
+
+                            if (currentRecord != null && !TextUtils.isEmpty(address) && TextUtils.isEmpty(etDetailedLocation.getText())) {
+                                etDetailedLocation.setText(address);
                             }
-                            tvLocationInfo.setText(String.format(Locale.US, "纬度: %.6f, 经度: %.6f", latitude, longitude));
                             Toast.makeText(AddEditRecordActivity.this, "位置已获取", Toast.LENGTH_SHORT).show();
                         });
 
@@ -606,6 +609,45 @@ public class AddEditRecordActivity extends AppCompatActivity {
             tilBirdName.setError(null);
         }
 
+        // 修改点: 新增 - 读取并校验经纬度输入
+        tilLatitude.setError(null);
+        tilLongitude.setError(null);
+        double latitude = Double.NaN;
+        double longitude = Double.NaN;
+
+        String latString = Objects.requireNonNull(etLatitude.getText()).toString().trim();
+        if (!latString.isEmpty()) {
+            try {
+                latitude = Double.parseDouble(latString);
+                if (latitude < -90 || latitude > 90) {
+                    tilLatitude.setError("纬度需在-90到90之间");
+                    etLatitude.requestFocus();
+                    return;
+                }
+            } catch (NumberFormatException e) {
+                tilLatitude.setError("无效的纬度格式");
+                etLatitude.requestFocus();
+                return;
+            }
+        }
+
+        String lonString = Objects.requireNonNull(etLongitude.getText()).toString().trim();
+        if (!lonString.isEmpty()) {
+            try {
+                longitude = Double.parseDouble(lonString);
+                if (longitude < -180 || longitude > 180) {
+                    tilLongitude.setError("经度需在-180到180之间");
+                    etLongitude.requestFocus();
+                    return;
+                }
+            } catch (NumberFormatException e) {
+                tilLongitude.setError("无效的经度格式");
+                etLongitude.requestFocus();
+                return;
+            }
+        }
+
+
         if (currentRecord == null) {
             currentRecord = new BirdRecord();
         }
@@ -615,6 +657,11 @@ public class AddEditRecordActivity extends AppCompatActivity {
         currentRecord.setScientificName(Objects.requireNonNull(etScientificName.getText()).toString().trim());
         currentRecord.setContent(Objects.requireNonNull(etContent.getText()).toString().trim());
         currentRecord.setDetailedLocation(Objects.requireNonNull(etDetailedLocation.getText()).toString().trim());
+
+        // 修改点: 设置从输入框解析出的经纬度
+        currentRecord.setLatitude(latitude);
+        currentRecord.setLongitude(longitude);
+
         currentRecord.setPhotoUris(new ArrayList<>(currentPhotoUris));
         currentRecord.setAudioUri(currentAudioUri);
 
