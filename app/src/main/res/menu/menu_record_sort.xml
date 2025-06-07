@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/sort_time_desc"
+        android:title="按时间倒序" />
+    <item
+        android:id="@+id/sort_time_asc"
+        android:title="按时间正序" />
+    <item
+        android:id="@+id/sort_name_asc"
+        android:title="按鸟名正序 (A-Z)" />
+    <item
+        android:id="@+id/sort_name_desc"
+        android:title="按鸟名逆序 (Z-A)" />
+    <item
+        android:id="@+id/sort_has_photo"
+        android:title="有图片的在前" />
+</menu>

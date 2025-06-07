@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -43,10 +44,16 @@ public class RecordFragment extends Fragment implements RecordAdapter.OnItemClic
     private TextView tvEmptyRecords;
     private FloatingActionButton fabAddRecord;
     private SearchView searchViewRecords;
+    private ImageButton btnSortRecords; // 新增排序按钮
 
     private BirdRecordDao birdRecordDao;
-
     private ActivityResultLauncher<Intent> addEditRecordLauncher;
+
+    // 定义排序方式的枚举
+    private enum SortMethod {
+        TIME_DESC, TIME_ASC, NAME_ASC, NAME_DESC, HAS_PHOTO
+    }
+    private SortMethod currentSortMethod = SortMethod.TIME_DESC; // 默认按时间倒序
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -75,6 +82,7 @@ public class RecordFragment extends Fragment implements RecordAdapter.OnItemClic
         tvEmptyRecords = view.findViewById(R.id.tv_empty_records);
         fabAddRecord = view.findViewById(R.id.fab_add_record);
         searchViewRecords = view.findViewById(R.id.search_view_records);
+        btnSortRecords = view.findViewById(R.id.btn_sort_records); // 初始化排序按钮
 
         setupRecyclerView();
         setupSearchView();
@@ -83,6 +91,9 @@ public class RecordFragment extends Fragment implements RecordAdapter.OnItemClic
             Intent intent = new Intent(getActivity(), AddEditRecordActivity.class);
             addEditRecordLauncher.launch(intent);
         });
+
+        // 为排序按钮设置点击监听
+        btnSortRecords.setOnClickListener(this::showSortMenu);
 
         return view;
     }
@@ -100,20 +111,15 @@ public class RecordFragment extends Fragment implements RecordAdapter.OnItemClic
     }
 
     private void setupSearchView() {
-        // --- 核心修正代码：让提示文本垂直居中 ---
         try {
-            // 获取 SearchView 内部的 EditText
             EditText searchEditText = searchViewRecords.findViewById(androidx.appcompat.R.id.search_src_text);
             if (searchEditText != null) {
-                // 设置其 Gravity 为垂直居中
                 searchEditText.setGravity(Gravity.CENTER_VERTICAL);
-                // 将其高度设置为充满父布局(CardView)，确保居中有效
                 searchEditText.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
             }
         } catch (Exception e) {
             Log.e(TAG, "Could not find and configure search_src_text in SearchView", e);
         }
-        // --- 修正代码结束 ---
 
         searchViewRecords.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -133,11 +139,8 @@ public class RecordFragment extends Fragment implements RecordAdapter.OnItemClic
         View closeButton = searchViewRecords.findViewById(androidx.appcompat.R.id.search_close_btn);
         if (closeButton != null) {
             closeButton.setOnClickListener(v -> {
-                if (searchViewRecords.getQuery().length() > 0) {
-                    searchViewRecords.setQuery("", false);
-                } else {
-                    searchViewRecords.clearFocus();
-                }
+                searchViewRecords.setQuery("", false);
+                searchViewRecords.clearFocus();
                 loadRecordsFromDb();
             });
         }
@@ -152,21 +155,21 @@ public class RecordFragment extends Fragment implements RecordAdapter.OnItemClic
         if (searchResults != null) {
             recordList.addAll(searchResults);
         }
-        recordAdapter.setRecords(recordList);
+        sortRecordsAndUpdateAdapter(); // 对搜索结果应用当前排序
         updateEmptyViewVisibility();
     }
 
     private void loadRecordsFromDb() {
         Log.d(TAG, "Loading records from DB...");
         birdRecordDao.open();
-        List<BirdRecord> allRecords = birdRecordDao.getAllRecords();
+        List<BirdRecord> allRecords = birdRecordDao.getAllRecords(); // DAO默认按时间倒序
         birdRecordDao.close();
 
         recordList.clear();
         if (allRecords != null) {
             recordList.addAll(allRecords);
         }
-        recordAdapter.setRecords(recordList);
+        sortRecordsAndUpdateAdapter(); // 应用当前选择的排序方式
         updateEmptyViewVisibility();
         Log.d(TAG, "Loaded " + recordList.size() + " records into adapter.");
     }
@@ -176,7 +179,7 @@ public class RecordFragment extends Fragment implements RecordAdapter.OnItemClic
             rvRecords.setVisibility(View.GONE);
             tvEmptyRecords.setVisibility(View.VISIBLE);
             tvEmptyRecords.setText("还没有任何观鸟记录\n点击右下角按钮添加吧！");
-        } else if (recordList.isEmpty()){
+        } else if (recordList.isEmpty()) {
             rvRecords.setVisibility(View.GONE);
             tvEmptyRecords.setVisibility(View.VISIBLE);
             tvEmptyRecords.setText("没有找到相关记录");
@@ -186,7 +189,76 @@ public class RecordFragment extends Fragment implements RecordAdapter.OnItemClic
         }
     }
 
-    // ... onItemClick, onItemLongClick 等其他方法保持不变 ...
+    /**
+     * 显示排序选项菜单
+     * @param v 触发此操作的视图（排序按钮）
+     */
+    private void showSortMenu(View v) {
+        PopupMenu popup = new PopupMenu(requireContext(), v);
+        popup.getMenuInflater().inflate(R.menu.menu_record_sort, popup.getMenu());
+
+        popup.setOnMenuItemClickListener(item -> {
+            int itemId = item.getItemId();
+            if (itemId == R.id.sort_time_desc) {
+                currentSortMethod = SortMethod.TIME_DESC;
+            } else if (itemId == R.id.sort_time_asc) {
+                currentSortMethod = SortMethod.TIME_ASC;
+            } else if (itemId == R.id.sort_name_asc) {
+                currentSortMethod = SortMethod.NAME_ASC;
+            } else if (itemId == R.id.sort_name_desc) {
+                currentSortMethod = SortMethod.NAME_DESC;
+            } else if (itemId == R.id.sort_has_photo) {
+                currentSortMethod = SortMethod.HAS_PHOTO;
+            }
+            // 应用新的排序并刷新列表
+            sortRecordsAndUpdateAdapter();
+            Toast.makeText(getContext(), "已按 \"" + item.getTitle() + "\" 排序", Toast.LENGTH_SHORT).show();
+            return true;
+        });
+
+        popup.show();
+    }
+
+    /**
+     * 根据 currentSortMethod 对 recordList 进行排序并更新 Adapter
+     */
+    private void sortRecordsAndUpdateAdapter() {
+        if (recordList == null || recordList.isEmpty()) {
+            // 如果列表为空，确保adapter也为空
+            if (recordAdapter != null) {
+                recordAdapter.setRecords(new ArrayList<>());
+            }
+            return;
+        }
+
+        switch (currentSortMethod) {
+            case TIME_ASC:
+                recordList.sort((r1, r2) -> Long.compare(r1.getRecordDateTimestamp(), r2.getRecordDateTimestamp()));
+                break;
+            case NAME_ASC:
+                recordList.sort((r1, r2) -> r1.getBirdName().compareToIgnoreCase(r2.getBirdName()));
+                break;
+            case NAME_DESC:
+                recordList.sort((r1, r2) -> r2.getBirdName().compareToIgnoreCase(r1.getBirdName()));
+                break;
+            case HAS_PHOTO:
+                recordList.sort((r1, r2) -> {
+                    boolean r1HasPhoto = r1.getPhotoUris() != null && !r1.getPhotoUris().isEmpty();
+                    boolean r2HasPhoto = r2.getPhotoUris() != null && !r2.getPhotoUris().isEmpty();
+                    // 将有照片的(true)排在没有照片的(false)前面
+                    return Boolean.compare(r2HasPhoto, r1HasPhoto);
+                });
+                break;
+            case TIME_DESC:
+            default:
+                // 默认按时间倒序
+                recordList.sort((r1, r2) -> Long.compare(r2.getRecordDateTimestamp(), r1.getRecordDateTimestamp()));
+                break;
+        }
+        // 使用排序后的列表更新适配器
+        recordAdapter.setRecords(recordList);
+    }
+
 
     @Override
     public void onItemClick(BirdRecord record) {
@@ -232,7 +304,9 @@ public class RecordFragment extends Fragment implements RecordAdapter.OnItemClic
 
         if (success) {
             Log.d(TAG, "Record deleted successfully from DB: ID " + record.getId());
-            recordAdapter.removeRecord(record.getId());
+            // 直接从当前列表移除，避免重新查询数据库
+            recordList.removeIf(r -> r.getId() == record.getId());
+            sortRecordsAndUpdateAdapter(); // 重新排序并刷新
             updateEmptyViewVisibility();
             Toast.makeText(getContext(), "\"" + record.getTitle() + "\" 已删除", Toast.LENGTH_SHORT).show();
         } else {
