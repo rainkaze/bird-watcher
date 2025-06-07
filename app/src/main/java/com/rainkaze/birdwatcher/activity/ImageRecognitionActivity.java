@@ -1,11 +1,13 @@
 package com.rainkaze.birdwatcher.activity;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log; // 新增导入
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -19,7 +21,7 @@ import java.util.List;
 
 public class ImageRecognitionActivity extends AppCompatActivity {
 
-    private ActivityImageRecognitionBinding binding; // 使用 ViewBinding
+    private ActivityImageRecognitionBinding binding;
     private Uri imageUri;
     private RecognitionResultAdapter resultAdapter;
     private BirdIdentificationService identificationService;
@@ -30,10 +32,8 @@ public class ImageRecognitionActivity extends AppCompatActivity {
         binding = ActivityImageRecognitionBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // 使用 ViewBinding 来设置 Toolbar
-        setSupportActionBar(binding.toolbar); // 修改这里，使用 binding.toolbar
+        setSupportActionBar(binding.toolbar);
 
-        // 添加 null 检查
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setTitle("图片识别");
@@ -64,9 +64,36 @@ public class ImageRecognitionActivity extends AppCompatActivity {
 
     private void setupRecyclerView() {
         resultAdapter = new RecognitionResultAdapter(this, new ArrayList<>());
+
+        // 修改点 1: 设置长按监听器
+        resultAdapter.setOnItemLongClickListener(result -> {
+            showSaveToRecordDialog(result);
+        });
+
         binding.recyclerViewImageResults.setLayoutManager(new LinearLayoutManager(this));
         binding.recyclerViewImageResults.setAdapter(resultAdapter);
     }
+
+    // 修改点 2: 新增一个方法来显示保存对话框
+    private void showSaveToRecordDialog(RecognitionResult result) {
+        new AlertDialog.Builder(this)
+                .setTitle("保存记录")
+                .setMessage("要将 \"" + result.getBirdName() + "\" 的识别结果保存到记鸟笔记吗？")
+                .setPositiveButton("保存", (dialog, which) -> {
+                    // 创建意图，跳转到 AddEditRecordActivity
+                    Intent intent = new Intent(ImageRecognitionActivity.this, AddEditRecordActivity.class);
+
+                    // 将鸟名和图片URI作为额外数据放入意图
+                    intent.putExtra(AddEditRecordActivity.EXTRA_BIRD_NAME_FROM_RECOGNITION, result.getBirdName());
+                    if (imageUri != null) {
+                        intent.putExtra(AddEditRecordActivity.EXTRA_IMAGE_URI_FROM_RECOGNITION, imageUri.toString());
+                    }
+                    startActivity(intent);
+                })
+                .setNegativeButton("取消", null)
+                .show();
+    }
+
 
     private void performImageRecognition(Uri imageUriToRecognize) {
         binding.progressBarImage.setVisibility(View.VISIBLE);
@@ -106,8 +133,7 @@ public class ImageRecognitionActivity extends AppCompatActivity {
 
     @Override
     public boolean onSupportNavigateUp() {
-        // onBackPressed(); // 或者 finish(); 如果你希望它总是返回到上一个栈中的 Activity
-        finish(); // 通常对于这种子页面，finish() 更符合预期
+        finish();
         return true;
     }
 }
