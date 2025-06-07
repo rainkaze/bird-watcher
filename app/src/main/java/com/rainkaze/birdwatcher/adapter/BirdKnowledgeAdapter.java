@@ -6,14 +6,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.bumptech.glide.Glide;
 import com.rainkaze.birdwatcher.R;
 import com.rainkaze.birdwatcher.model.zoology.BirdSpecies;
-
 import java.util.List;
 
 public class BirdKnowledgeAdapter extends RecyclerView.Adapter<BirdKnowledgeAdapter.BirdViewHolder> {
@@ -22,7 +19,6 @@ public class BirdKnowledgeAdapter extends RecyclerView.Adapter<BirdKnowledgeAdap
     private final List<BirdSpecies> birdList;
     private final OnBirdClickListener listener;
 
-    // 接口中不再需要图片请求的回调
     public interface OnBirdClickListener {
         void onBirdClick(BirdSpecies bird);
     }
@@ -67,13 +63,18 @@ public class BirdKnowledgeAdapter extends RecyclerView.Adapter<BirdKnowledgeAdap
             tvBirdCommonName.setText(bird.getName());
             tvBirdScientificName.setText(bird.getScientificName());
 
-            // 直接从drawable加载本地图片资源
-            Glide.with(context)
-                    .load(bird.getImageResourceId())
-                    .placeholder(R.drawable.ic_bird_default)
-                    .error(R.drawable.ic_picture_error) // 如果图片ID无效或未提供，显示错误图标
-                    .centerCrop()
-                    .into(ivBirdImage);
+            // **BUG FIX #1**: Check for a valid resource ID before giving it to Glide.
+            if (bird.getImageResourceId() != 0) {
+                Glide.with(context)
+                        .load(bird.getImageResourceId())
+                        .placeholder(R.drawable.ic_bird_default)
+                        .error(R.drawable.ic_picture_error)
+                        .centerCrop()
+                        .into(ivBirdImage);
+            } else {
+                // If the ID is 0, load a default image directly.
+                ivBirdImage.setImageResource(R.drawable.ic_bird_default);
+            }
 
             itemView.setOnClickListener(v -> listener.onBirdClick(bird));
         }

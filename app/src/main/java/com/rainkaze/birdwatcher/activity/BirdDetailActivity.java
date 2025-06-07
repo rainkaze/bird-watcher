@@ -6,22 +6,17 @@ import android.os.Looper;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ImageView;
-import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.google.android.material.appbar.CollapsingToolbarLayout;
 import com.rainkaze.birdwatcher.R;
 import com.rainkaze.birdwatcher.adapter.DescriptionAdapter;
+import com.rainkaze.birdwatcher.databinding.ActivityBirdDetailBinding; // Import the generated binding class
 import com.rainkaze.birdwatcher.model.zoology.BirdSpecies;
 import com.rainkaze.birdwatcher.model.zoology.DescriptionItem;
 import com.rainkaze.birdwatcher.service.ZoologyApiClient;
@@ -33,24 +28,23 @@ import java.util.Map;
 public class BirdDetailActivity extends AppCompatActivity {
 
     public static final String EXTRA_BIRD_SPECIES = "EXTRA_BIRD_SPECIES";
-    private static final String TAG = "BirdDetailActivity";
+    private static final String TAG = "BirdDetailDebug";
+
+    // The binding object will hold direct references to all views
+    private ActivityBirdDetailBinding binding;
 
     private BirdSpecies birdSpecies;
     private ZoologyApiClient apiClient;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
-
-    private ImageView ivBirdImage;
-    private TextView tvBirdName, tvScientificName;
-    private RecyclerView rvDescriptions;
     private DescriptionAdapter descriptionAdapter;
     private final List<DescriptionItem> descriptionList = new ArrayList<>();
-    private ProgressBar progressBar;
-    private CollapsingToolbarLayout collapsingToolbar;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_bird_detail);
+        // Inflate the layout using View Binding
+        binding = ActivityBirdDetailBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
         birdSpecies = getIntent().getParcelableExtra(EXTRA_BIRD_SPECIES);
         if (birdSpecies == null || birdSpecies.getScientificName() == null) {
@@ -59,75 +53,76 @@ public class BirdDetailActivity extends AppCompatActivity {
             return;
         }
 
+        Log.d(TAG, "onCreate: Displaying details for " + birdSpecies.getScientificName());
+
         apiClient = new ZoologyApiClient(this);
-        initViews();
+
         setupToolbar();
+        setupRecyclerView();
         populateInitialData();
-        fetchDetails(); // 调用重构后的主方法
-    }
-
-    private void initViews() {
-        collapsingToolbar = findViewById(R.id.collapsing_toolbar);
-        ivBirdImage = findViewById(R.id.iv_detail_bird_image);
-        tvBirdName = findViewById(R.id.tv_detail_bird_name);
-        tvScientificName = findViewById(R.id.tv_detail_scientific_name);
-        progressBar = findViewById(R.id.progress_bar_detail);
-        rvDescriptions = findViewById(R.id.rv_descriptions);
-
-        descriptionAdapter = new DescriptionAdapter(this, descriptionList);
-        rvDescriptions.setLayoutManager(new LinearLayoutManager(this));
-        rvDescriptions.setAdapter(descriptionAdapter);
-        rvDescriptions.setNestedScrollingEnabled(false);
+        fetchDetails();
     }
 
     private void setupToolbar() {
-        Toolbar toolbar = findViewById(R.id.toolbar_bird_detail);
-        setSupportActionBar(toolbar);
+        setSupportActionBar(binding.toolbarBirdDetail);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
     }
 
-    private void populateInitialData() {
-        collapsingToolbar.setTitle(birdSpecies.getName());
-        tvBirdName.setText(birdSpecies.getName());
-        tvScientificName.setText(birdSpecies.getScientificName());
+    private void setupRecyclerView() {
+        descriptionAdapter = new DescriptionAdapter(this, descriptionList);
+        binding.rvDescriptions.setLayoutManager(new LinearLayoutManager(this));
+        binding.rvDescriptions.setAdapter(descriptionAdapter);
+        binding.rvDescriptions.setNestedScrollingEnabled(false);
+    }
 
-        Glide.with(this)
-                .load(birdSpecies.getImageResourceId())
-                .error(R.drawable.ic_picture_error)
-                .placeholder(R.drawable.ic_bird_default)
-                .into(ivBirdImage);
+    private void populateInitialData() {
+        // Now using 'binding.collapsingToolbar', which is guaranteed to be non-null
+        binding.collapsingToolbar.setTitle(birdSpecies.getName());
+        binding.tvDetailBirdName.setText(birdSpecies.getName());
+        binding.tvDetailScientificName.setText(birdSpecies.getScientificName());
+
+        if (birdSpecies.getImageResourceId() != 0) {
+            Glide.with(this)
+                    .load(birdSpecies.getImageResourceId())
+                    .error(R.drawable.ic_picture_error)
+                    .placeholder(R.drawable.ic_bird_default)
+                    .into(binding.ivDetailBirdImage);
+        } else {
+            Log.w(TAG, "populateInitialData: Invalid image resource ID (0). Loading default placeholder.");
+            binding.ivDetailBirdImage.setImageResource(R.drawable.ic_bird_default);
+        }
     }
 
     private void fetchDetails() {
-        progressBar.setVisibility(View.VISIBLE);
+        Log.d(TAG, "fetchDetails: Starting to fetch description types.");
+        binding.progressBarDetail.setVisibility(View.VISIBLE);
         descriptionList.clear();
         descriptionAdapter.notifyDataSetChanged();
 
-        // 步骤1: 获取所有可用的描述信息类别
         apiClient.getDescriptionTypes(birdSpecies.getScientificName(), new ZoologyApiClient.ApiResponseCallback<Map<String, String>>() {
             @Override
             public void onSuccess(Map<String, String> result) {
                 mainHandler.post(() -> {
-                    progressBar.setVisibility(View.GONE);
+                    binding.progressBarDetail.setVisibility(View.GONE);
                     if (result == null || result.isEmpty()) {
+                        Log.w(TAG, "fetchDetails onSuccess: No description types found for this species.");
                         DescriptionItem item = new DescriptionItem("无详细信息");
                         item.setContent("该物种暂无详细的文字描述。");
                         descriptionList.add(item);
                         descriptionAdapter.notifyDataSetChanged();
                         return;
                     }
-                    // 步骤2: 将获取到的类别列表传递给顺序加载方法，从第一个开始
                     fetchNextDescription(new ArrayList<>(result.entrySet()), 0);
                 });
             }
 
             @Override
             public void onFailure(Exception e) {
-                Log.e(TAG, "获取描述类型失败", e);
+                Log.e(TAG, "fetchDetails onFailure: Failed to get description types.", e);
                 mainHandler.post(()-> {
-                    progressBar.setVisibility(View.GONE);
+                    binding.progressBarDetail.setVisibility(View.GONE);
                     DescriptionItem item = new DescriptionItem("信息加载失败");
                     item.setContent("无法获取该物种的详细信息分类: " + e.getMessage());
                     descriptionList.add(item);
@@ -137,14 +132,9 @@ public class BirdDetailActivity extends AppCompatActivity {
         });
     }
 
-    /**
-     * 这是核心的修复方法：顺序获取每一个描述类型的具体内容
-     * @param types 包含所有类型ID和名称的列表
-     * @param currentIndex 当前要获取的类型的索引
-     */
     private void fetchNextDescription(final List<Map.Entry<String, String>> types, final int currentIndex) {
-        // 如果所有类型都已加载完毕，则停止递归
         if (currentIndex >= types.size()) {
+            Log.d(TAG, "fetchNextDescription: All items processed.");
             return;
         }
 
@@ -152,31 +142,35 @@ public class BirdDetailActivity extends AppCompatActivity {
         final String typeId = entry.getKey();
         final String typeName = entry.getValue();
 
-        // 先在UI上创建一个“加载中...”的条目
+        Log.d(TAG, "fetchNextDescription: Now fetching index " + currentIndex + " - Type ID: " + typeId + ", Name: " + typeName);
+
         final DescriptionItem item = new DescriptionItem(typeName);
         final int position = descriptionList.size();
         descriptionList.add(item);
         descriptionAdapter.notifyItemInserted(position);
 
-        // 为这个条目请求具体内容
         apiClient.getDescriptionContent(birdSpecies.getScientificName(), typeId, new ZoologyApiClient.ApiResponseCallback<String>() {
             @Override
             public void onSuccess(String result) {
                 mainHandler.post(() -> {
-                    item.setContent(result);
+                    Log.d(TAG, "onSuccess for type " + typeName + ". Content length: " + (result != null ? result.length() : 0));
+                    if (result != null && !result.isEmpty()) {
+                        item.setContent(result);
+                    } else {
+                        item.setContent("该项暂无内容。");
+                    }
+
                     if (descriptionAdapter != null) descriptionAdapter.notifyItemChanged(position);
-                    // 成功后，请求下一个
                     fetchNextDescription(types, currentIndex + 1);
                 });
             }
 
             @Override
             public void onFailure(Exception e) {
-                Log.e(TAG, "获取内容失败，类型ID: " + typeId, e);
+                Log.e(TAG, "onFailure for type " + typeName, e);
                 mainHandler.post(() -> {
                     item.setContent("内容加载失败。");
                     if (descriptionAdapter != null) descriptionAdapter.notifyItemChanged(position);
-                    // 即使失败，也要继续请求下一个
                     fetchNextDescription(types, currentIndex + 1);
                 });
             }

@@ -4,26 +4,16 @@ import android.content.Context;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.google.gson.reflect.TypeToken;
 import com.rainkaze.birdwatcher.R;
-import com.rainkaze.birdwatcher.model.zoology.BirdSpecies;
-
-import org.json.JSONException;
-
 import java.io.IOException;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.FormBody;
@@ -36,9 +26,8 @@ import okhttp3.ResponseBody;
 
 public class ZoologyApiClient {
 
-    private static final String TAG = "ZoologyApiClient";
+    private static final String TAG = "BirdDetailDebug"; // Using a consistent tag for easy filtering
     private final OkHttpClient client;
-    private final Gson gson;
     private final String apiKey;
     private final String dbaseName;
     private final String baseUrl;
@@ -53,7 +42,6 @@ public class ZoologyApiClient {
                 .connectTimeout(30, TimeUnit.SECONDS)
                 .readTimeout(30, TimeUnit.SECONDS)
                 .build();
-        this.gson = new Gson();
         this.apiKey = context.getString(R.string.zoology_api_key);
         this.dbaseName = context.getString(R.string.zoology_db_name);
         this.baseUrl = context.getString(R.string.zoology_api_base_url);
@@ -67,8 +55,6 @@ public class ZoologyApiClient {
                 .build();
     }
 
-    // 省略 getBirdSpeciesList 方法，因为它已被移除
-
     public void getDescriptionTypes(String scientificName, ApiResponseCallback<Map<String, String>> callback) {
         RequestBody formBody = new FormBody.Builder()
                 .add("scientificName", scientificName)
@@ -76,7 +62,6 @@ public class ZoologyApiClient {
                 .add("apiKey", apiKey)
                 .build();
         Request request = buildPostRequest("/api/v1/descriptionType", formBody);
-        Log.d(TAG, "Fetching description types for: " + scientificName);
 
         client.newCall(request).enqueue(new Callback() {
             @Override
@@ -91,7 +76,7 @@ public class ZoologyApiClient {
                         throw new IOException("Request failed with code: " + response.code());
                     }
                     String json = body.string();
-                    Log.d(TAG, "getDescriptionTypes RAW RESPONSE: " + json);
+                    Log.d(TAG, "getDescriptionTypes RAW RESPONSE: " + json); // LOGGING
 
                     JsonObject jsonObject = JsonParser.parseString(json).getAsJsonObject();
                     if (jsonObject.get("code").getAsInt() != 200) {
@@ -106,6 +91,7 @@ public class ZoologyApiClient {
                             resultMap.put(entry.getKey(), entry.getValue().getAsString());
                         }
                     }
+                    Log.d(TAG, "getDescriptionTypes: Found " + resultMap.size() + " description types."); // LOGGING
                     callback.onSuccess(resultMap);
                 } catch (Exception e) {
                     callback.onFailure(e);
@@ -115,15 +101,13 @@ public class ZoologyApiClient {
     }
 
     public void getDescriptionContent(String scientificName, String desTypeId, ApiResponseCallback<String> callback) {
-        // ↓↓↓  这是关键的修正：将 "desTypeId" 改为 "descriptionType" ↓↓↓
         RequestBody formBody = new FormBody.Builder()
                 .add("scientificName", scientificName)
-                .add("descriptionType", desTypeId) // 修正参数名
+                .add("descriptionType", desTypeId)
                 .add("dbaseName", dbaseName)
                 .add("apiKey", apiKey)
                 .build();
         Request request = buildPostRequest("/api/v1/description", formBody);
-        Log.d(TAG, "Fetching content for type: " + desTypeId + " for " + scientificName);
 
         client.newCall(request).enqueue(new Callback() {
             @Override
@@ -138,7 +122,7 @@ public class ZoologyApiClient {
                         throw new IOException("Request failed with code: " + response.code());
                     }
                     String json = body.string();
-                    Log.d(TAG, "getDescriptionContent RAW RESPONSE for type " + desTypeId + ": " + json);
+                    Log.d(TAG, "getDescriptionContent RAW RESPONSE for type " + desTypeId + ": " + json); // LOGGING
 
                     JsonObject jsonObject = JsonParser.parseString(json).getAsJsonObject();
                     if (jsonObject.get("code").getAsInt() != 200) {
@@ -146,8 +130,11 @@ public class ZoologyApiClient {
                     }
 
                     JsonArray descInfoArray = jsonObject.getAsJsonObject("data").getAsJsonArray("DescriptionInfo");
+
+                    // **BUG FIX #2**: Handle empty content as a success case, not an error.
                     if (descInfoArray == null || descInfoArray.size() == 0) {
-                        throw new JSONException("No DescriptionInfo found");
+                        callback.onSuccess(""); // Return an empty string to signify "no content".
+                        return;
                     }
 
                     StringBuilder contentBuilder = new StringBuilder();
@@ -169,6 +156,4 @@ public class ZoologyApiClient {
             }
         });
     }
-
-    // 省略 getBirdImages 方法，因为它已被移除
 }
