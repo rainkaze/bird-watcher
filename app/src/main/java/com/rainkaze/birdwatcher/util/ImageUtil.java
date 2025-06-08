@@ -104,4 +104,60 @@ public class ImageUtil {
             }
         }
     }
+
+
+    /**
+     * 从 URI 加载图片，转换为带MIME头的 Base64 编码字符串。
+     * 例如: "data:image/jpeg;base64,..."
+     * @param context Context 对象.
+     * @param imageUri 图片的 URI.
+     * @return 带头的 Base64 图片字符串, 如果失败返回 null.
+     */
+    public static String uriToBase64WithHeader(Context context, Uri imageUri) {
+        InputStream inputStream = null;
+        ByteArrayOutputStream baos = null;
+        try {
+            inputStream = context.getContentResolver().openInputStream(imageUri);
+            if (inputStream == null) {
+                throw new FileNotFoundException("Cannot open input stream from URI: " + imageUri);
+            }
+
+            Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+            if (bitmap == null) {
+                throw new IOException("Failed to decode bitmap from URI: " + imageUri);
+            }
+
+            // 适当缩放和压缩以减小体积
+            bitmap = scaleAndCompressBitmap(bitmap, 1024, 80); // 最大边1024px, 质量80%
+
+            baos = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 80, baos);
+            byte[] imageBytes = baos.toByteArray();
+
+            // Base64 编码
+            String base64Image = Base64.encodeToString(imageBytes, Base64.NO_WRAP);
+
+            // 添加MIME头
+            return "data:image/jpeg;base64," + base64Image;
+
+        } catch (IOException e) {
+            Log.e(TAG, "Error converting URI to Base64 with header", e);
+            return null;
+        } finally {
+            if (inputStream != null) {
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
+                    Log.e(TAG, "Error closing input stream", e);
+                }
+            }
+            if (baos != null) {
+                try {
+                    baos.close();
+                } catch (IOException e) {
+                    Log.e(TAG, "Error closing byte array output stream", e);
+                }
+            }
+        }
+    }
 }

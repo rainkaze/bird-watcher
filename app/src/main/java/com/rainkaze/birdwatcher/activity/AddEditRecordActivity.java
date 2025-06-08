@@ -44,6 +44,7 @@ import com.rainkaze.birdwatcher.R;
 import com.rainkaze.birdwatcher.adapter.PhotoPreviewAdapter;
 import com.rainkaze.birdwatcher.db.BirdRecordDao;
 import com.rainkaze.birdwatcher.model.BirdRecord;
+import com.rainkaze.birdwatcher.service.SessionManager;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -86,6 +87,9 @@ public class AddEditRecordActivity extends AppCompatActivity {
     private BirdRecord currentRecord;
     private long currentRecordId = -1;
 
+    private SessionManager sessionManager;
+
+
     private ActivityResultLauncher<Intent> pickMultipleImagesLauncher;
     private ActivityResultLauncher<Intent> takePictureLauncher;
     private Uri tempPhotoUriForCamera;
@@ -107,6 +111,7 @@ public class AddEditRecordActivity extends AppCompatActivity {
         setContentView(R.layout.activity_add_edit_record);
 
         birdRecordDao = new BirdRecordDao(this);
+        sessionManager = new SessionManager(this);
 
         Toolbar toolbar = findViewById(R.id.toolbar_add_edit);
         setSupportActionBar(toolbar);
@@ -692,7 +697,7 @@ public class AddEditRecordActivity extends AppCompatActivity {
 
         birdRecordDao.open();
         long resultId;
-        if (currentRecord.getId() != -1 && currentRecordId != -1) {
+        if (currentRecord.getId() != -1) { // 注意：这里判断应该是 currentRecord.getId() != -1
             resultId = birdRecordDao.updateRecord(currentRecord);
             if (resultId > 0) {
                 Toast.makeText(this, "记录已更新", Toast.LENGTH_LONG).show();
@@ -702,7 +707,12 @@ public class AddEditRecordActivity extends AppCompatActivity {
                 Toast.makeText(this, "更新记录失败", Toast.LENGTH_LONG).show();
             }
         } else {
-            resultId = birdRecordDao.addRecord(currentRecord);
+            // --- 这是关键的修改点 ---
+            long userId = sessionManager.getUserId();
+            // 如果用户未登录，userId会是-1，这在数据库层面是允许的
+            resultId = birdRecordDao.addRecord(currentRecord, userId);
+            // --------------------
+
             if (resultId != -1) {
                 Toast.makeText(this, "记录已保存", Toast.LENGTH_LONG).show();
                 setResult(Activity.RESULT_OK);
