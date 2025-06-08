@@ -142,7 +142,7 @@ public class SoundRecognitionActivity extends AppCompatActivity {
             mediaRecorder.start();
             isRecording = true;
             binding.textRecordingStatus.setText("录音中...");
-            binding.fabRecordSound.setImageResource(R.mipmap.ic_stop); // 你需要一个停止图标
+            binding.fabRecordSound.setImageResource(R.drawable.ic_stop); // 你需要一个停止图标
             binding.progressBarSound.setVisibility(View.VISIBLE);
             binding.buttonPlayRecording.setVisibility(View.GONE);
             binding.buttonStartSoundRecognition.setVisibility(View.GONE);
@@ -167,7 +167,7 @@ public class SoundRecognitionActivity extends AppCompatActivity {
                 mediaRecorder = null;
                 isRecording = false;
                 binding.textRecordingStatus.setText("录音完成");
-                binding.fabRecordSound.setImageResource(R.mipmap.ic_mic);
+                binding.fabRecordSound.setImageResource(R.drawable.ic_mic);
                 binding.progressBarSound.setVisibility(View.GONE);
                 binding.buttonPlayRecording.setVisibility(View.VISIBLE);
                 binding.buttonStartSoundRecognition.setVisibility(View.VISIBLE);

@@ -524,7 +524,7 @@ public class AddEditRecordActivity extends AppCompatActivity {
                 mediaRecorder = null;
                 isRecording = false;
                 btnRecordAudio.setText("开始录音");
-                btnRecordAudio.setIcon(ContextCompat.getDrawable(this, R.mipmap.ic_mic));
+                btnRecordAudio.setIcon(ContextCompat.getDrawable(this, R.drawable.ic_mic));
                 if (currentAudioUri != null) {
                     Toast.makeText(this, "录音完成", Toast.LENGTH_SHORT).show();
                 }
