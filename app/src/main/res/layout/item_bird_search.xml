@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="4dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="2dp"
+    app:strokeColor="#11000000"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="12dp"
+        android:gravity="center_vertical"
+        android:minHeight="64dp">
+
+        <!-- 鸟类图标 -->
+        <ImageView
+            android:id="@+id/iv_bird_icon"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_bird_default"
+            android:contentDescription="@string/bird_icon"
+            android:padding="4dp"
+            app:tint="@color/bird_icon_tint"/>
+
+        <!-- 鸟类信息 -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="12dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_bird_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="?attr/textAppearanceBodyMedium"
+                android:textColor="#FF000000"
+                android:textSize="16sp"
+                android:ellipsize="end"
+                android:maxLines="1"
+                tools:text="红腹锦鸡"/>
+
+            <TextView
+                android:id="@+id/tv_popularity"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textAppearance="?attr/textAppearanceBodySmall"
+                android:textSize="14sp"
+                android:textColor="#FF666666"
+                tools:text="人气值: 95%"/>
+        </LinearLayout>
+
+        <!-- 定位按钮 - 修复警告 -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_locate"
+            style="@style/Widget.MaterialComponents.Button.Icon"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:minWidth="48dp"
+            android:minHeight="48dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            app:icon="@drawable/ic_location_pin"
+            app:iconTint="@color/colorPrimary"
+            app:iconSize="24dp"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            android:background="?selectableItemBackgroundBorderless"
+            android:contentDescription="@string/locate_bird"
+            android:focusable="true"/>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

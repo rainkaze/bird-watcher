@@ -1,15 +1,99 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    android:layout_height="match_parent">
 
-    <TextView
+    <com.baidu.mapapi.map.MapView
+        android:id="@+id/bmapView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clickable="true" />
+
+    <LinearLayout
+        android:id="@+id/search_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:orientation="vertical"
+        android:padding="8dp"
+        android:elevation="8dp">
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="24dp"
+            app:cardElevation="4dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:id="@+id/iv_search_mode_toggle"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:padding="12dp"
+                    android:src="@drawable/ic_bird"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="切换搜索模式"
+                    app:tint="?attr/colorControlNormal"/>
+
+                <androidx.appcompat.widget.SearchView
+                    android:id="@+id/sv_map_search"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    app:queryHint="@string/search_birds"
+                    app:iconifiedByDefault="false"
+                    app:searchIcon="@null"
+                    app:closeIcon="@drawable/ic_close" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_map_search_results"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxHeight="250dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_rounded_white"
+            android:visibility="gone"
+            tools:listitem="@layout/item_record_search"
+            tools:visibility="visible"/>
+
+    </LinearLayout>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_toggle_records"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:text="这是地图" />
+        android:layout_alignParentBottom="true"
+        android:layout_toStartOf="@id/btn_my_location"
+        android:layout_alignWithParentIfMissing="true"
+        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="16dp"
+        app:fabSize="normal"
+        android:src="@drawable/ic_layers"
+        android:contentDescription="切换记录可见性"
+        app:backgroundTint="@color/white"
+        app:tint="?attr/colorControlNormal"
+        app:elevation="6dp" />
 
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/btn_my_location"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_margin="16dp"
+        android:src="@drawable/ic_my_location"
+        android:contentDescription="@string/locate_me"
+        app:backgroundTint="@color/white"
+        app:tint="?attr/colorPrimary"
+        app:elevation="6dp" />
 
 </RelativeLayout>

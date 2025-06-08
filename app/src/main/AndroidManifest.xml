@@ -2,6 +2,26 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Permissions -->
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+
+
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -12,8 +32,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.BirdWatcher"
         tools:targetApi="31">
+
+        <meta-data
+            android:name="com.baidu.lbsapi.API_KEY"
+            android:value="8o6fbLrOdsPXJabJwnqgs4tcvgYEvDhY" />
+
         <activity
-            android:name=".MainActivity"
+            android:name=".activity.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -25,6 +50,43 @@
             android:name=".activity.BirdDetailActivity"
             android:parentActivityName=".MainActivity"
             android:label="鸟类详情"/>
+
+
+
+        <activity
+            android:name=".activity.ImageRecognitionActivity"
+            android:label="图片识别"
+            android:parentActivityName=".activity.MainActivity"> <meta-data
+            android:name="android.support.PARENT_ACTIVITY"
+            android:value=".activity.MainActivity" />
+        </activity>
+        <activity
+            android:name=".activity.SoundRecognitionActivity"
+            android:label="声音识别"
+            android:parentActivityName=".activity.MainActivity"> <meta-data
+            android:name="android.support.PARENT_ACTIVITY"
+            android:value=".activity.MainActivity" />
+        </activity>
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" /> </provider>
+
+
+        <activity
+            android:name=".activity.AddEditRecordActivity"
+            android:label="记录详情"
+            android:parentActivityName=".activity.MainActivity" android:windowSoftInputMode="adjustPan">
+            <meta-data
+            android:name="android.support.PARENT_ACTIVITY"
+            android:value=".activity.MainActivity" />
+        </activity>
     </application>
+
 
 </manifest>

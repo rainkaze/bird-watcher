@@ -3,4 +3,10 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="white2">#FFfcfcfc</color>
+    <color name="colorPrimary">#FF6200EE</color>
+    <color name="bird_icon_tint">#FF3700B3</color>
+    <!-- 鸟类标记背景色 -->
+    <color name="bird_hot">#FF5722</color>     <!-- 热门鸟类颜色 - 橙色 -->
+    <color name="bird_popular">#4CAF50</color> <!-- 受欢迎鸟类颜色 - 绿色 -->
+    <color name="bird_normal">#2196F3</color>  <!-- 普通鸟类颜色 - 蓝色 -->
 </resources>
