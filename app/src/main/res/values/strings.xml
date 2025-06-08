@@ -1,7 +1,6 @@
 <resources>
     <string name="app_name">观鸟记</string>
     <string name="view_on_baike">查看百科详情</string>
-    <string name="title_image_recognition">图片识鸟</string>
     <string name="desc_image_to_recognize">待识别的图片</string>
     <string name="button_start_recognition">开始识别</string>
     <string name="title_recognition_results">识别结果</string>
@@ -17,4 +16,28 @@
     <string name="locate_bird">定位到鸟类位置</string>
     <string name="locate_me">定位到我的位置</string>
     <string name="location_permission_required">需要位置权限才能使用定位功能</string>
+
+    <string name="bird_detail_order"><b>所属目:</b> %1$s</string>
+    <string name="bird_detail_family"><b>所属科:</b> %1$s</string>
+    <string name="bird_detail_iucn"><b>IUCN红色名录:</b> %1$s</string>
+    <string name="bird_detail_protection"><b>国家保护等级:</b> %1$s</string>
+    <string name="bird_detail_url"><![CDATA[<b>详情链接:</b> <a href="%1$s">%2$s</a>]]></string>
+
+    <string name="title_image_recognition">图片识鸟</string>
+    <string name="error_image_not_found">未找到图片</string>
+    <string name="error_recognition_failed">识别出错: %1$s</string>
+    <string name="dialog_title_save_record">保存记录</string>
+    <string name="dialog_message_save_record">要将 \"%1$s\" 的识别结果保存到记鸟笔记吗？</string>
+    <string name="action_save">保存</string>
+    <string name="action_cancel">取消</string>
+
+    <string name="title_sound_recognition">听音识鸟</string>
+    <string name="error_permission_denied">录音权限被拒绝</string>
+    <string name="error_invalid_audio_file">录音文件无效或不存在</string>
+    <string name="error_record_prepare_failed">录音准备失败</string>
+    <string name="error_playback_prepare_failed">播放准备失败</string>
+    <string name="status_recording">录音中...</string>
+    <string name="status_record_complete">录音完成</string>
+    <string name="action_play_recording">播放录音</string>
+    <string name="action_stop_playback">停止播放</string>
 </resources>

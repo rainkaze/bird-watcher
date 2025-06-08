@@ -57,9 +57,6 @@ public class MainActivity extends AppCompatActivity {
         list.add(new RecordFragment());
         list.add(new KnowledgeFragment());
 
-        // --- 修改开始 ---
-
-        // 步骤 1: 首先设置监听器，让它准备好接收事件。
         bottomNavigationView.setOnItemSelectedListener(item -> {
             Fragment selectedFragment = null;
             int itemId = item.getItemId();
@@ -81,13 +78,9 @@ public class MainActivity extends AppCompatActivity {
             return true;
         });
 
-        // 步骤 2: 在 App 首次启动时，再以编程方式选中首页。
-        // 因为监听器已经设置，所以这次选择会成功触发 showFragment()。
         if (savedInstanceState == null) {
             bottomNavigationView.setSelectedItemId(R.id.navigation_home);
         }
-
-        // --- 修改结束 ---
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBarInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars());

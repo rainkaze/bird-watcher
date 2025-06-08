@@ -5,18 +5,17 @@ import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.rainkaze.birdwatcher.R; // For drawable ic_stop
+import com.rainkaze.birdwatcher.R;
 import com.rainkaze.birdwatcher.adapter.RecognitionResultAdapter;
 import com.rainkaze.birdwatcher.databinding.ActivitySoundRecognitionBinding;
 import com.rainkaze.birdwatcher.model.RecognitionResult;
@@ -27,37 +26,35 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * "听音识鸟" 功能的 Activity。
+ * <p>
+ * 该页面允许用户录制音频，播放录音，并将录音发送到服务器进行鸟鸣识别。
+ * 主要功能包括：
+ * - 请求录音权限。
+ * - 控制音频的录制和停止。
+ * - 控制录音的回放。
+ * - 调用服务执行声音识别，并在界面上展示结果。
+ * - 在生命周期方法中正确管理和释放媒体资源。
+ * </p>
+ */
 public class SoundRecognitionActivity extends AppCompatActivity {
 
-    private static final String LOG_TAG = "SoundRecognition";
+    private static final String TAG = "SoundRecognitionActivity";
     private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
+
     private ActivitySoundRecognitionBinding binding;
-
-    private MediaRecorder mediaRecorder;
-    private String audioFilePath = null;
-    private boolean isRecording = false;
-
-    private MediaPlayer mediaPlayer;
-    private boolean isPlaying = false;
-
     private RecognitionResultAdapter resultAdapter;
     private BirdIdentificationService identificationService;
 
-    // Requesting permission to RECORD_AUDIO
-    private boolean permissionToRecordAccepted = false;
-    private String[] permissions = {Manifest.permission.RECORD_AUDIO};
+    private MediaRecorder mediaRecorder;
+    private MediaPlayer mediaPlayer;
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == REQUEST_RECORD_AUDIO_PERMISSION) {
-            permissionToRecordAccepted = grantResults[0] == PackageManager.PERMISSION_GRANTED;
-        }
-        if (!permissionToRecordAccepted) {
-            Toast.makeText(this, "录音权限被拒绝", Toast.LENGTH_SHORT).show();
-            finish();
-        }
-    }
+    private String audioFilePath = null;
+    private boolean isRecording = false;
+    private boolean isPlaying = false;
+    private boolean permissionToRecordAccepted = false;
+    private final String[] permissions = {Manifest.permission.RECORD_AUDIO};
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -65,84 +62,123 @@ public class SoundRecognitionActivity extends AppCompatActivity {
         binding = ActivitySoundRecognitionBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        setSupportActionBar(findViewById(R.id.toolbar)); // 如果你有Toolbar
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setTitle("听音识鸟");
+        setupToolbar();
+        checkPermissions();
+        initServicesAndPaths();
+        setupRecyclerView();
+        setupClickListeners();
+    }
 
+    /**
+     * 初始化 Toolbar。
+     */
+    private void setupToolbar() {
+        setSupportActionBar(binding.toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setTitle(getString(R.string.title_sound_recognition));
+        }
+    }
 
-        identificationService = new BirdIdentificationService(this); // 初始化服务
-
-        // 检查并请求录音权限
+    /**
+     * 检查录音权限，如果未授予则发起请求。
+     */
+    private void checkPermissions() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION);
         } else {
             permissionToRecordAccepted = true;
         }
+    }
 
-        // 设置录音文件路径
+    /**
+     * 初始化识别服务和录音文件存储路径。
+     */
+    private void initServicesAndPaths() {
+        identificationService = new BirdIdentificationService(this);
         File audioDir = new File(getExternalCacheDir(), "audiorecord");
         if (!audioDir.exists()) {
             audioDir.mkdirs();
         }
         audioFilePath = new File(audioDir, "bird_sound.3gp").getAbsolutePath();
-
-
-        setupRecyclerView();
-
-        binding.fabRecordSound.setOnClickListener(v -> {
-            if (!permissionToRecordAccepted) {
-                ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION);
-                return;
-            }
-            if (isRecording) {
-                stopRecording();
-            } else {
-                startRecording();
-            }
-        });
-
-        binding.buttonPlayRecording.setOnClickListener(v -> {
-            if (audioFilePath != null) {
-                if (isPlaying) {
-                    stopPlaying();
-                } else {
-                    startPlaying();
-                }
-            }
-        });
-
-        binding.buttonStartSoundRecognition.setOnClickListener(v -> {
-            if (audioFilePath != null) {
-                File audioFile = new File(audioFilePath);
-                if (audioFile.exists() && audioFile.length() > 0) {
-                    performSoundRecognition(audioFile);
-                } else {
-                    Toast.makeText(this, "录音文件无效或不存在", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
     }
 
+    /**
+     * 初始化用于显示识别结果的 RecyclerView。
+     */
     private void setupRecyclerView() {
         resultAdapter = new RecognitionResultAdapter(this, new ArrayList<>());
         binding.recyclerViewSoundResults.setLayoutManager(new LinearLayoutManager(this));
         binding.recyclerViewSoundResults.setAdapter(resultAdapter);
     }
 
+    /**
+     * 设置所有按钮的点击事件监听器。
+     */
+    private void setupClickListeners() {
+        binding.fabRecordSound.setOnClickListener(v -> toggleRecording());
+        binding.buttonPlayRecording.setOnClickListener(v -> togglePlayback());
+        binding.buttonStartSoundRecognition.setOnClickListener(v -> triggerRecognition());
+    }
 
+    /**
+     * 切换录音状态（开始/停止）。
+     */
+    private void toggleRecording() {
+        if (!permissionToRecordAccepted) {
+            ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION);
+            return;
+        }
+        if (isRecording) {
+            stopRecording();
+        } else {
+            startRecording();
+        }
+    }
+
+    /**
+     * 切换播放状态（播放/停止）。
+     */
+    private void togglePlayback() {
+        if (audioFilePath != null) {
+            if (isPlaying) {
+                stopPlaying();
+            } else {
+                startPlaying();
+            }
+        }
+    }
+
+    /**
+     * 触发声音识别流程。
+     */
+    private void triggerRecognition() {
+        if (audioFilePath != null) {
+            File audioFile = new File(audioFilePath);
+            if (audioFile.exists() && audioFile.length() > 0) {
+                performSoundRecognition(audioFile);
+            } else {
+                Toast.makeText(this, getString(R.string.error_invalid_audio_file), Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    /**
+     * 开始录音，并更新UI状态。
+     */
     private void startRecording() {
         mediaRecorder = new MediaRecorder();
         mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP); // 或 AAC_ADTS 等
+        mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
         mediaRecorder.setOutputFile(audioFilePath);
-        mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB); // 或 AAC
+        mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
 
         try {
             mediaRecorder.prepare();
             mediaRecorder.start();
             isRecording = true;
-            binding.textRecordingStatus.setText("录音中...");
-            binding.fabRecordSound.setImageResource(R.drawable.ic_stop); // 你需要一个停止图标
+            binding.textRecordingStatus.setText(getString(R.string.status_recording));
+            binding.fabRecordSound.setImageResource(R.drawable.ic_stop);
             binding.progressBarSound.setVisibility(View.VISIBLE);
             binding.buttonPlayRecording.setVisibility(View.GONE);
             binding.buttonStartSoundRecognition.setVisibility(View.GONE);
@@ -150,23 +186,25 @@ public class SoundRecognitionActivity extends AppCompatActivity {
             binding.recyclerViewSoundResults.setVisibility(View.GONE);
             binding.textViewNoSoundResult.setVisibility(View.GONE);
         } catch (IOException e) {
-            Log.e(LOG_TAG, "prepare() failed", e);
-            Toast.makeText(this, "录音准备失败", Toast.LENGTH_SHORT).show();
+            Log.e(TAG, "MediaRecorder prepare() failed", e);
+            Toast.makeText(this, getString(R.string.error_record_prepare_failed), Toast.LENGTH_SHORT).show();
         }
     }
 
+    /**
+     * 停止录音，释放资源并更新UI。
+     */
     private void stopRecording() {
         if (mediaRecorder != null) {
             try {
                 mediaRecorder.stop();
             } catch (RuntimeException stopException) {
-                // 处理在调用stop()时可能发生的RuntimeException
-                Log.w(LOG_TAG, "RuntimeException on stopMediaRecorder.", stopException);
+                Log.w(TAG, "RuntimeException on stopping MediaRecorder.", stopException);
             } finally {
                 mediaRecorder.release();
                 mediaRecorder = null;
                 isRecording = false;
-                binding.textRecordingStatus.setText("录音完成");
+                binding.textRecordingStatus.setText(getString(R.string.status_record_complete));
                 binding.fabRecordSound.setImageResource(R.drawable.ic_mic);
                 binding.progressBarSound.setVisibility(View.GONE);
                 binding.buttonPlayRecording.setVisibility(View.VISIBLE);
@@ -175,6 +213,9 @@ public class SoundRecognitionActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * 开始播放录音。
+     */
     private void startPlaying() {
         mediaPlayer = new MediaPlayer();
         try {
@@ -182,25 +223,32 @@ public class SoundRecognitionActivity extends AppCompatActivity {
             mediaPlayer.prepare();
             mediaPlayer.start();
             isPlaying = true;
-            binding.buttonPlayRecording.setText("停止播放");
+            binding.buttonPlayRecording.setText(getString(R.string.action_stop_playback));
             mediaPlayer.setOnCompletionListener(mp -> stopPlaying());
         } catch (IOException e) {
-            Log.e(LOG_TAG, "prepare() failed for playback", e);
-            Toast.makeText(this, "播放准备失败", Toast.LENGTH_SHORT).show();
+            Log.e(TAG, "MediaPlayer prepare() failed", e);
+            Toast.makeText(this, getString(R.string.error_playback_prepare_failed), Toast.LENGTH_SHORT).show();
         }
     }
 
+    /**
+     * 停止播放录音并释放资源。
+     */
     private void stopPlaying() {
         if (mediaPlayer != null) {
             mediaPlayer.release();
             mediaPlayer = null;
-            isPlaying = false;
-            binding.buttonPlayRecording.setText("播放录音");
         }
+        isPlaying = false;
+        binding.buttonPlayRecording.setText(getString(R.string.action_play_recording));
     }
 
+    /**
+     * 调用服务执行声音识别，并在回调中处理结果。
+     *
+     * @param audioFile 包含鸟鸣的音频文件。
+     */
     private void performSoundRecognition(File audioFile) {
-        binding.progressBarSound.setIndeterminate(true); // 可能需要切换回Indeterminate
         binding.progressBarSound.setVisibility(View.VISIBLE);
         binding.buttonStartSoundRecognition.setEnabled(false);
         binding.buttonPlayRecording.setEnabled(false);
@@ -231,18 +279,33 @@ public class SoundRecognitionActivity extends AppCompatActivity {
                     binding.progressBarSound.setVisibility(View.GONE);
                     binding.buttonStartSoundRecognition.setEnabled(true);
                     binding.buttonPlayRecording.setEnabled(true);
-                    binding.textViewNoSoundResult.setText("识别出错: " + error);
+                    String errorMessage = getString(R.string.error_recognition_failed, error);
+                    binding.textViewNoSoundResult.setText(errorMessage);
                     binding.textViewNoSoundResult.setVisibility(View.VISIBLE);
-                    Toast.makeText(SoundRecognitionActivity.this, "识别出错: " + error, Toast.LENGTH_LONG).show();
+                    Toast.makeText(SoundRecognitionActivity.this, errorMessage, Toast.LENGTH_LONG).show();
                 });
             }
         });
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_RECORD_AUDIO_PERMISSION) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                permissionToRecordAccepted = true;
+            } else {
+                permissionToRecordAccepted = false;
+                Toast.makeText(this, getString(R.string.error_permission_denied), Toast.LENGTH_SHORT).show();
+                finish(); // 如果权限被拒绝，关闭页面
+            }
+        }
+    }
 
     @Override
     protected void onStop() {
         super.onStop();
+        // 确保在 Activity 停止时释放所有媒体资源，防止泄漏
         if (mediaRecorder != null) {
             mediaRecorder.release();
             mediaRecorder = null;
