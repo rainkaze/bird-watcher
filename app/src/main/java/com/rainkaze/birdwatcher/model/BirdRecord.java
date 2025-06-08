@@ -2,30 +2,62 @@ package com.rainkaze.birdwatcher.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import com.google.gson.annotations.SerializedName;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Date;
 import lombok.Data;
-import lombok.NoArgsConstructor; // 添加无参构造
+import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor // Lombok 会生成一个无参构造函数
+@NoArgsConstructor
 public class BirdRecord implements Parcelable {
-    private long id = -1; // 记录ID，用于数据库操作, -1 表示尚未持久化
-    private long clientId; // 跨设备唯一ID
-    private String title; // 标题
-    private String content; // 内容
-    private String birdName; // 鸟名
-    private String scientificName; // 学名
-    private double latitude = Double.NaN; // 纬度
-    private double longitude = Double.NaN; // 经度
-    private String detailedLocation; // 详细地点
-    private List<String> photoUris = new ArrayList<>(); // 照片URI列表 (存储为String)
-    private String audioUri; // 音频URI (存储为String)
-    private long recordDateTimestamp; // 记录日期 (存储为 long 类型的时间戳)
 
-    private long userId; // 关联的用户ID
-    private int syncStatus; // 0:未同步, 1:已同步, 2:待更新
+    // --- 修改开始: 使用 @SerializedName ---
+
+    @SerializedName("localId") // 在JSON序列化时使用localId，避免与服务端的id冲突
+    private long id = -1;
+
+    // value="id" 匹配服务端返回的 "id" 字段
+    // alternate="clientId" 兼容可能存在的 "clientId" 字段
+    @SerializedName(value = "id", alternate = {"clientId"})
+    private long clientId;
+
+    @SerializedName("title")
+    private String title;
+
+    @SerializedName("content")
+    private String content;
+
+    @SerializedName("birdName")
+    private String birdName;
+
+    @SerializedName("scientificName")
+    private String scientificName;
+
+    @SerializedName("latitude")
+    private double latitude = Double.NaN;
+
+    @SerializedName("longitude")
+    private double longitude = Double.NaN;
+
+    @SerializedName("detailedLocation")
+    private String detailedLocation;
+
+    @SerializedName("photoUris")
+    private List<String> photoUris = new ArrayList<>();
+
+    @SerializedName("audioUri")
+    private String audioUri;
+
+    @SerializedName("recordDateTimestamp")
+    private long recordDateTimestamp;
+
+    // 这部分是本地逻辑，不需要参与Gson序列化
+    private transient long userId;
+    private transient int syncStatus;
+
+    // --- 修改结束 ---
 
 
     // 便捷构造函数 (不含ID)
@@ -51,9 +83,10 @@ public class BirdRecord implements Parcelable {
         }
     }
 
-    // Parcelable 实现
+    // Parcelable 实现 (保持不变, 但要确保所有字段都已处理)
     protected BirdRecord(Parcel in) {
         id = in.readLong();
+        clientId = in.readLong();
         title = in.readString();
         content = in.readString();
         birdName = in.readString();
@@ -64,10 +97,26 @@ public class BirdRecord implements Parcelable {
         photoUris = in.createStringArrayList();
         audioUri = in.readString();
         recordDateTimestamp = in.readLong();
-
-        clientId = in.readLong();
         userId = in.readLong();
         syncStatus = in.readInt();
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeLong(id);
+        dest.writeLong(clientId);
+        dest.writeString(title);
+        dest.writeString(content);
+        dest.writeString(birdName);
+        dest.writeString(scientificName);
+        dest.writeDouble(latitude);
+        dest.writeDouble(longitude);
+        dest.writeString(detailedLocation);
+        dest.writeStringList(photoUris);
+        dest.writeString(audioUri);
+        dest.writeLong(recordDateTimestamp);
+        dest.writeLong(userId);
+        dest.writeInt(syncStatus);
     }
 
     public static final Creator<BirdRecord> CREATOR = new Creator<BirdRecord>() {
@@ -88,35 +137,12 @@ public class BirdRecord implements Parcelable {
     }
 
     @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeLong(id);
-        dest.writeString(title);
-        dest.writeString(content);
-        dest.writeString(birdName);
-        dest.writeString(scientificName);
-        dest.writeDouble(latitude);
-        dest.writeDouble(longitude);
-        dest.writeString(detailedLocation);
-        dest.writeStringList(photoUris);
-        dest.writeString(audioUri);
-        dest.writeLong(recordDateTimestamp);
-
-        dest.writeLong(clientId);
-        dest.writeLong(userId);
-        dest.writeInt(syncStatus);
-    }
-
-    // toString() 方法，方便调试
-    @Override
     public String toString() {
         return "BirdRecord{" +
                 "id=" + id +
+                ", clientId=" + clientId +
                 ", title='" + title + '\'' +
                 ", birdName='" + birdName + '\'' +
-                ", recordDate=" + getRecordDate() + // 使用getter
                 '}';
     }
-
-
-
 }

@@ -144,18 +144,33 @@ public class BirdRecordDao {
     }
 
     /**
-     * 插入从服务器同步来的记录
+     * 将从服务器同步来的记录添加或更新到本地数据库。
+     *
+     * @param serverRecord  从服务器解析的 BirdRecord 对象。
+     * @param currentUserId 当前登录用户的ID。
      */
-    public void addOrUpdateSyncedRecord(BirdRecord record, long currentUserId) {
-        BirdRecord existing = getRecordByClientId(record.getClientId());
-        if (existing == null) {
+    public void addOrUpdateSyncedRecord(BirdRecord serverRecord, long currentUserId) {
+        if (database == null || !database.isOpen()) open();
+
+        // 通过唯一的 clientId 查找本地是否存在该记录
+        BirdRecord localRecord = getRecordByClientId(serverRecord.getClientId());
+
+        ContentValues values = recordToContentValues(serverRecord);
+        values.put(BirdRecordDbHelper.COLUMN_USER_ID, currentUserId);
+        values.put(BirdRecordDbHelper.COLUMN_SYNC_STATUS, 1); // 从服务器来，状态总是“已同步”
+
+        if (localRecord == null) {
             // 本地不存在，直接插入
-            ContentValues values = recordToContentValues(record);
-            values.put(BirdRecordDbHelper.COLUMN_USER_ID, currentUserId);
-            values.put(BirdRecordDbHelper.COLUMN_SYNC_STATUS, 1); // 从服务器来，状态是已同步
             database.insert(BirdRecordDbHelper.TABLE_RECORDS, null, values);
+            Log.d(TAG, "Inserted new record from server with clientId: " + serverRecord.getClientId());
         } else {
-            // 本地已存在，可以根据更新时间选择是否覆盖，这里简化为不覆盖
+            // 本地已存在，进行更新。
+            // 在此采用“服务器数据为准”的策略，直接覆盖本地记录。
+            // 更复杂的策略可能需要比较时间戳，但当前后端API未提供。
+            database.update(BirdRecordDbHelper.TABLE_RECORDS, values,
+                    BirdRecordDbHelper.COLUMN_CLIENT_ID + " = ?",
+                    new String[]{String.valueOf(serverRecord.getClientId())});
+            Log.d(TAG, "Updated existing record from server with clientId: " + serverRecord.getClientId());
         }
     }
 
