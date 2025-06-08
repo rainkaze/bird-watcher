@@ -601,7 +601,7 @@ public class MapFragment extends Fragment implements OnGetPoiSearchResultListene
                 mLocationClient.start();
                 panToMyLocation();
             } else {
-                Toast.makeText(getContext(), "定位权限被拒绝", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(getContext(), "定位权限被拒绝", Toast.LENGTH_SHORT).show();
             }
         }
     }

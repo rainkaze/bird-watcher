@@ -20,7 +20,7 @@ public class BirdRecordDao {
     private static final String TAG = "BirdRecordDao";
     private SQLiteDatabase database;
     private BirdRecordDbHelper dbHelper;
-    private Gson gson; // 用于序列化/反序列化 List<String>
+    private Gson gson;
 
     public BirdRecordDao(Context context) {
         dbHelper = new BirdRecordDbHelper(context);
@@ -139,7 +139,6 @@ public class BirdRecordDao {
             database.update(BirdRecordDbHelper.TABLE_RECORDS, updateClientId,
                     BirdRecordDbHelper.COLUMN_ID + " = ?", new String[]{String.valueOf(insertId)});
         }
-        Log.d(TAG, "Record inserted with ID: " + insertId);
         return insertId;
     }
 
@@ -162,7 +161,6 @@ public class BirdRecordDao {
         if (localRecord == null) {
             // 本地不存在，直接插入
             database.insert(BirdRecordDbHelper.TABLE_RECORDS, null, values);
-            Log.d(TAG, "Inserted new record from server with clientId: " + serverRecord.getClientId());
         } else {
             // 本地已存在，进行更新。
             // 在此采用“服务器数据为准”的策略，直接覆盖本地记录。
@@ -170,7 +168,6 @@ public class BirdRecordDao {
             database.update(BirdRecordDbHelper.TABLE_RECORDS, values,
                     BirdRecordDbHelper.COLUMN_CLIENT_ID + " = ?",
                     new String[]{String.valueOf(serverRecord.getClientId())});
-            Log.d(TAG, "Updated existing record from server with clientId: " + serverRecord.getClientId());
         }
     }
 
@@ -218,7 +215,6 @@ public class BirdRecordDao {
         int rowsAffected = database.delete(BirdRecordDbHelper.TABLE_RECORDS,
                 BirdRecordDbHelper.COLUMN_ID + " = ?",
                 new String[]{String.valueOf(recordId)});
-        Log.d(TAG, "Record deleted with ID: " + recordId + ". Rows affected: " + rowsAffected);
         return rowsAffected > 0;
     }
 
@@ -324,7 +320,6 @@ public class BirdRecordDao {
             }
             cursor.close();
         }
-        Log.d(TAG, "Searched for '" + query + "', found " + records.size() + " records.");
         return records;
     }
 
@@ -338,14 +333,12 @@ public class BirdRecordDao {
         BirdRecord record = new BirdRecord();
         record.setClientId(cursor.getLong(cursor.getColumnIndexOrThrow(BirdRecordDbHelper.COLUMN_CLIENT_ID)));
 
-        // 使用 getColumnIndexOrThrow 来确保列名正确，如果列不存在会抛出异常，有助于调试
         record.setId(cursor.getLong(cursor.getColumnIndexOrThrow(BirdRecordDbHelper.COLUMN_ID)));
         record.setTitle(cursor.getString(cursor.getColumnIndexOrThrow(BirdRecordDbHelper.COLUMN_TITLE)));
         record.setBirdName(cursor.getString(cursor.getColumnIndexOrThrow(BirdRecordDbHelper.COLUMN_BIRD_NAME)));
         record.setScientificName(cursor.getString(cursor.getColumnIndexOrThrow(BirdRecordDbHelper.COLUMN_SCIENTIFIC_NAME)));
         record.setContent(cursor.getString(cursor.getColumnIndexOrThrow(BirdRecordDbHelper.COLUMN_CONTENT)));
 
-        // 处理可空的 Double 类型
         int latColIndex = cursor.getColumnIndex(BirdRecordDbHelper.COLUMN_LATITUDE);
         if (latColIndex != -1 && !cursor.isNull(latColIndex)) {
             record.setLatitude(cursor.getDouble(latColIndex));
@@ -364,13 +357,12 @@ public class BirdRecordDao {
         record.setRecordDateTimestamp(cursor.getLong(cursor.getColumnIndexOrThrow(BirdRecordDbHelper.COLUMN_RECORD_DATE_TIMESTAMP)));
         record.setAudioUri(cursor.getString(cursor.getColumnIndexOrThrow(BirdRecordDbHelper.COLUMN_AUDIO_URI)));
 
-        // 反序列化 photoUris
         String photoUrisJson = cursor.getString(cursor.getColumnIndexOrThrow(BirdRecordDbHelper.COLUMN_PHOTO_URIS));
         if (!TextUtils.isEmpty(photoUrisJson)) {
             Type listType = new TypeToken<ArrayList<String>>() {}.getType();
             record.setPhotoUris(gson.fromJson(photoUrisJson, listType));
         } else {
-            record.setPhotoUris(new ArrayList<>()); //确保列表不为null
+            record.setPhotoUris(new ArrayList<>());
         }
         record.setUserId(cursor.getLong(cursor.getColumnIndexOrThrow(BirdRecordDbHelper.COLUMN_USER_ID)));
         record.setSyncStatus(cursor.getInt(cursor.getColumnIndexOrThrow(BirdRecordDbHelper.COLUMN_SYNC_STATUS)));
@@ -448,7 +440,6 @@ public class BirdRecordDao {
         return records;
     }
 
-    // 新增方法: 更新记录的同步状态
     public void updateRecordSyncStatus(List<Long> clientIds, int newStatus) {
         if (database == null || !database.isOpen()) {
             open();
@@ -467,7 +458,6 @@ public class BirdRecordDao {
         ContentValues values = new ContentValues();
         values.put(BirdRecordDbHelper.COLUMN_USER_ID, newUserId);
 
-        // 只更新 userId=0 的记录
         int rowsAffected = database.update(BirdRecordDbHelper.TABLE_RECORDS, values,
                 BirdRecordDbHelper.COLUMN_USER_ID + " = ?",
                 new String[]{"0"});

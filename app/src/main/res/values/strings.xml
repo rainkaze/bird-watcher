@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">观鸟记</string>
+    <string name="app_name">鸟伴侣</string>
     <string name="view_on_baike">查看百科详情</string>
     <string name="desc_image_to_recognize">待识别的图片</string>
     <string name="button_start_recognition">开始识别</string>

@@ -874,21 +874,20 @@ public class AddEditRecordActivity extends AppCompatActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode) {
             case REQUEST_PERMISSIONS_CODE:
-                // 在这里可以处理一些通用权限请求的结果，比如提示用户哪些权限是必须的
                 break;
             case REQUEST_LOCATION_PERMISSION_CODE:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     Toast.makeText(this, "定位权限已获取，请再次点击按钮", Toast.LENGTH_SHORT).show();
                     startLocationRequest();
                 } else {
-                    Toast.makeText(this, "定位权限被拒绝", Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(this, "定位权限被拒绝", Toast.LENGTH_SHORT).show();
                 }
                 break;
             case REQUEST_AUDIO_PERMISSION_CODE:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     toggleRecording();
                 } else {
-                    Toast.makeText(this, "录音权限被拒绝", Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(this, "录音权限被拒绝", Toast.LENGTH_SHORT).show();
                 }
                 break;
         }
