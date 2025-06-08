@@ -35,12 +35,71 @@ public class BirdRecordDao {
         dbHelper.close();
     }
 
+
+    /**
+     * 将一个 BirdRecord 对象转换为 ContentValues，用于数据库插入或更新。
+     * @param record 要转换的记录对象
+     * @return 转换后的 ContentValues
+     */
+    private ContentValues recordToContentValues(BirdRecord record) {
+        ContentValues values = new ContentValues();
+        // 如果 clientId 有效，则放入
+        if (record.getClientId() > 0) {
+            values.put(BirdRecordDbHelper.COLUMN_CLIENT_ID, record.getClientId());
+        }
+        values.put(BirdRecordDbHelper.COLUMN_TITLE, record.getTitle());
+        values.put(BirdRecordDbHelper.COLUMN_BIRD_NAME, record.getBirdName());
+        values.put(BirdRecordDbHelper.COLUMN_SCIENTIFIC_NAME, record.getScientificName());
+        values.put(BirdRecordDbHelper.COLUMN_CONTENT, record.getContent());
+        if (!Double.isNaN(record.getLatitude())) {
+            values.put(BirdRecordDbHelper.COLUMN_LATITUDE, record.getLatitude());
+        }
+        if (!Double.isNaN(record.getLongitude())) {
+            values.put(BirdRecordDbHelper.COLUMN_LONGITUDE, record.getLongitude());
+        }
+        values.put(BirdRecordDbHelper.COLUMN_DETAILED_LOCATION, record.getDetailedLocation());
+        values.put(BirdRecordDbHelper.COLUMN_RECORD_DATE_TIMESTAMP, record.getRecordDateTimestamp());
+        values.put(BirdRecordDbHelper.COLUMN_AUDIO_URI, record.getAudioUri());
+
+        // 序列化 photoUris 列表
+        if (record.getPhotoUris() != null && !record.getPhotoUris().isEmpty()) {
+            String photoUrisJson = gson.toJson(record.getPhotoUris());
+            values.put(BirdRecordDbHelper.COLUMN_PHOTO_URIS, photoUrisJson);
+        } else {
+            values.putNull(BirdRecordDbHelper.COLUMN_PHOTO_URIS);
+        }
+        return values;
+    }
+
+    /**
+     * 根据 跨设备唯一ID (clientId) 获取一条记录。
+     * @param clientId 记录的唯一ID
+     * @return BirdRecord 对象，如果未找到则返回 null
+     */
+    public BirdRecord getRecordByClientId(long clientId) {
+        if (database == null || !database.isOpen()) open();
+        Cursor cursor = database.query(BirdRecordDbHelper.TABLE_RECORDS,
+                null, // all columns
+                BirdRecordDbHelper.COLUMN_CLIENT_ID + " = ?",
+                new String[]{String.valueOf(clientId)},
+                null, null, null);
+
+        BirdRecord record = null;
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                record = cursorToRecord(cursor);
+            }
+            cursor.close();
+        }
+        return record;
+    }
+
     /**
      * 添加一条新的观鸟记录
      * @param record BirdRecord 对象
      * @return 插入记录的 ID，如果失败则返回 -1
      */
-    public long addRecord(BirdRecord record) {
+    public long addRecord(BirdRecord record, long userId) {
         if (database == null || !database.isOpen()) {
             open(); // 确保数据库已打开
         }
@@ -67,9 +126,37 @@ public class BirdRecordDao {
         }
         values.put(BirdRecordDbHelper.COLUMN_AUDIO_URI, record.getAudioUri());
 
+        values.put(BirdRecordDbHelper.COLUMN_USER_ID, userId);
+        values.put(BirdRecordDbHelper.COLUMN_SYNC_STATUS, 0); // 新记录总是未同步
+
+
         long insertId = database.insert(BirdRecordDbHelper.TABLE_RECORDS, null, values);
+
+        // 关键：将新生成的 _id 作为 clientId
+        if (insertId != -1) {
+            ContentValues updateClientId = new ContentValues();
+            updateClientId.put(BirdRecordDbHelper.COLUMN_CLIENT_ID, insertId);
+            database.update(BirdRecordDbHelper.TABLE_RECORDS, updateClientId,
+                    BirdRecordDbHelper.COLUMN_ID + " = ?", new String[]{String.valueOf(insertId)});
+        }
         Log.d(TAG, "Record inserted with ID: " + insertId);
         return insertId;
+    }
+
+    /**
+     * 插入从服务器同步来的记录
+     */
+    public void addOrUpdateSyncedRecord(BirdRecord record, long currentUserId) {
+        BirdRecord existing = getRecordByClientId(record.getClientId());
+        if (existing == null) {
+            // 本地不存在，直接插入
+            ContentValues values = recordToContentValues(record);
+            values.put(BirdRecordDbHelper.COLUMN_USER_ID, currentUserId);
+            values.put(BirdRecordDbHelper.COLUMN_SYNC_STATUS, 1); // 从服务器来，状态是已同步
+            database.insert(BirdRecordDbHelper.TABLE_RECORDS, null, values);
+        } else {
+            // 本地已存在，可以根据更新时间选择是否覆盖，这里简化为不覆盖
+        }
     }
 
     /**
@@ -78,45 +165,30 @@ public class BirdRecordDao {
      * @return 受影响的行数，通常为 1 (成功) 或 0 (失败或记录不存在)
      */
     public int updateRecord(BirdRecord record) {
-        if (record.getId() == -1) {
-            Log.e(TAG, "Cannot update record with invalid ID: -1");
-            return 0; // 不能更新没有有效ID的记录
-        }
-        if (database == null || !database.isOpen()) {
-            open();
+        if (record.getId() == -1) return 0;
+        if (database == null || !database.isOpen()) open();
+
+        ContentValues values = recordToContentValues(record);
+        if (record.getSyncStatus() == 1) { // 如果是已同步的记录被修改
+            values.put(BirdRecordDbHelper.COLUMN_SYNC_STATUS, 2); // 2: 待更新
         }
 
-        ContentValues values = new ContentValues();
-        values.put(BirdRecordDbHelper.COLUMN_TITLE, record.getTitle());
-        values.put(BirdRecordDbHelper.COLUMN_BIRD_NAME, record.getBirdName());
-        values.put(BirdRecordDbHelper.COLUMN_SCIENTIFIC_NAME, record.getScientificName());
-        values.put(BirdRecordDbHelper.COLUMN_CONTENT, record.getContent());
-        if (!Double.isNaN(record.getLatitude())) {
-            values.put(BirdRecordDbHelper.COLUMN_LATITUDE, record.getLatitude());
-        } else {
-            values.putNull(BirdRecordDbHelper.COLUMN_LATITUDE);
-        }
-        if (!Double.isNaN(record.getLongitude())) {
-            values.put(BirdRecordDbHelper.COLUMN_LONGITUDE, record.getLongitude());
-        } else {
-            values.putNull(BirdRecordDbHelper.COLUMN_LONGITUDE);
-        }
-        values.put(BirdRecordDbHelper.COLUMN_DETAILED_LOCATION, record.getDetailedLocation());
-        values.put(BirdRecordDbHelper.COLUMN_RECORD_DATE_TIMESTAMP, record.getRecordDateTimestamp());
-
-        if (record.getPhotoUris() != null && !record.getPhotoUris().isEmpty()) {
-            String photoUrisJson = gson.toJson(record.getPhotoUris());
-            values.put(BirdRecordDbHelper.COLUMN_PHOTO_URIS, photoUrisJson);
-        } else {
-            values.putNull(BirdRecordDbHelper.COLUMN_PHOTO_URIS);
-        }
-        values.put(BirdRecordDbHelper.COLUMN_AUDIO_URI, record.getAudioUri());
-
-        int rowsAffected = database.update(BirdRecordDbHelper.TABLE_RECORDS, values,
+        return database.update(BirdRecordDbHelper.TABLE_RECORDS, values,
                 BirdRecordDbHelper.COLUMN_ID + " = ?",
                 new String[]{String.valueOf(record.getId())});
-        Log.d(TAG, "Record updated with ID: " + record.getId() + ". Rows affected: " + rowsAffected);
-        return rowsAffected;
+    }
+
+    /**
+     * 将游客记录认领给指定用户（在上传成功后调用）
+     */
+    public void claimGuestRecordsToUser(long userId, List<Long> clientIds) {
+        if (database == null || !database.isOpen() || clientIds.isEmpty()) return;
+        ContentValues values = new ContentValues();
+        values.put(BirdRecordDbHelper.COLUMN_USER_ID, userId);
+
+        String ids = TextUtils.join(",", clientIds);
+        database.update(BirdRecordDbHelper.TABLE_RECORDS, values,
+                BirdRecordDbHelper.COLUMN_CLIENT_ID + " IN (" + ids + ")", null);
     }
 
     /**
@@ -165,14 +237,11 @@ public class BirdRecordDao {
      * @return BirdRecord 列表
      */
     public List<BirdRecord> getAllRecords() {
-        if (database == null || !database.isOpen()) {
-            open();
-        }
+        if (database == null || !database.isOpen()) open();
         List<BirdRecord> records = new ArrayList<>();
         Cursor cursor = database.query(BirdRecordDbHelper.TABLE_RECORDS,
-                null, // all columns
-                null, null, null, null,
-                BirdRecordDbHelper.COLUMN_RECORD_DATE_TIMESTAMP + " DESC"); // 按日期降序
+                null, null, null, null, null,
+                BirdRecordDbHelper.COLUMN_RECORD_DATE_TIMESTAMP + " DESC");
 
         if (cursor != null) {
             while (cursor.moveToNext()) {
@@ -180,7 +249,28 @@ public class BirdRecordDao {
             }
             cursor.close();
         }
-        Log.d(TAG, "Fetched " + records.size() + " records.");
+        return records;
+    }
+
+    /**
+     * 获取需要同步的记录 (属于特定用户或游客的)
+     */
+    public List<BirdRecord> getUnsyncedRecordsForUserAndGuest(long userId) {
+        if (database == null || !database.isOpen()) open();
+        List<BirdRecord> records = new ArrayList<>();
+        String selection = "(" + BirdRecordDbHelper.COLUMN_USER_ID + " = ? OR " +
+                BirdRecordDbHelper.COLUMN_USER_ID + " = 0) AND (" +
+                BirdRecordDbHelper.COLUMN_SYNC_STATUS + " = 0 OR " +
+                BirdRecordDbHelper.COLUMN_SYNC_STATUS + " = 2)";
+        Cursor cursor = database.query(BirdRecordDbHelper.TABLE_RECORDS,
+                null, selection, new String[]{String.valueOf(userId)}, null, null, null);
+
+        if (cursor != null) {
+            while (cursor.moveToNext()) {
+                records.add(cursorToRecord(cursor));
+            }
+            cursor.close();
+        }
         return records;
     }
 
@@ -231,6 +321,8 @@ public class BirdRecordDao {
      */
     private BirdRecord cursorToRecord(Cursor cursor) {
         BirdRecord record = new BirdRecord();
+        record.setClientId(cursor.getLong(cursor.getColumnIndexOrThrow(BirdRecordDbHelper.COLUMN_CLIENT_ID)));
+
         // 使用 getColumnIndexOrThrow 来确保列名正确，如果列不存在会抛出异常，有助于调试
         record.setId(cursor.getLong(cursor.getColumnIndexOrThrow(BirdRecordDbHelper.COLUMN_ID)));
         record.setTitle(cursor.getString(cursor.getColumnIndexOrThrow(BirdRecordDbHelper.COLUMN_TITLE)));
@@ -265,6 +357,8 @@ public class BirdRecordDao {
         } else {
             record.setPhotoUris(new ArrayList<>()); //确保列表不为null
         }
+        record.setUserId(cursor.getLong(cursor.getColumnIndexOrThrow(BirdRecordDbHelper.COLUMN_USER_ID)));
+        record.setSyncStatus(cursor.getInt(cursor.getColumnIndexOrThrow(BirdRecordDbHelper.COLUMN_SYNC_STATUS)));
 
         return record;
     }
@@ -294,4 +388,77 @@ public class BirdRecordDao {
         Log.d(TAG, "Fetched " + stats.size() + " bird stats.");
         return stats;
     }
+
+    public List<BirdRecord> getAllRecordsForUser(long userId) {
+        if (database == null || !database.isOpen()) {
+            open();
+        }
+        List<BirdRecord> records = new ArrayList<>();
+        Cursor cursor = database.query(BirdRecordDbHelper.TABLE_RECORDS,
+                null,
+                BirdRecordDbHelper.COLUMN_USER_ID + " = ?",
+                new String[]{String.valueOf(userId)},
+                null, null,
+                BirdRecordDbHelper.COLUMN_RECORD_DATE_TIMESTAMP + " DESC");
+
+        if (cursor != null) {
+            while (cursor.moveToNext()) {
+                records.add(cursorToRecord(cursor));
+            }
+            cursor.close();
+        }
+        return records;
+    }
+
+    public List<BirdRecord> getUnsyncedRecordsForUser(long userId) {
+        if (database == null || !database.isOpen()) {
+            open();
+        }
+        List<BirdRecord> records = new ArrayList<>();
+        String selection = BirdRecordDbHelper.COLUMN_USER_ID + " = ? AND (" +
+                BirdRecordDbHelper.COLUMN_SYNC_STATUS + " = 0 OR " +
+                BirdRecordDbHelper.COLUMN_SYNC_STATUS + " = 2)";
+        Cursor cursor = database.query(BirdRecordDbHelper.TABLE_RECORDS,
+                null,
+                selection,
+                new String[]{String.valueOf(userId)},
+                null, null, null);
+
+        if (cursor != null) {
+            while (cursor.moveToNext()) {
+                records.add(cursorToRecord(cursor));
+            }
+            cursor.close();
+        }
+        return records;
+    }
+
+    // 新增方法: 更新记录的同步状态
+    public void updateRecordSyncStatus(List<Long> clientIds, int newStatus) {
+        if (database == null || !database.isOpen()) {
+            open();
+        }
+        String ids = TextUtils.join(",", clientIds);
+        ContentValues values = new ContentValues();
+        values.put(BirdRecordDbHelper.COLUMN_SYNC_STATUS, newStatus);
+        database.update(BirdRecordDbHelper.TABLE_RECORDS, values,
+                BirdRecordDbHelper.COLUMN_ID + " IN (" + ids + ")", null);
+    }
+
+    public int claimGuestRecords(long newUserId) {
+        if (database == null || !database.isOpen()) {
+            open();
+        }
+        ContentValues values = new ContentValues();
+        values.put(BirdRecordDbHelper.COLUMN_USER_ID, newUserId);
+
+        // 只更新 userId=0 的记录
+        int rowsAffected = database.update(BirdRecordDbHelper.TABLE_RECORDS, values,
+                BirdRecordDbHelper.COLUMN_USER_ID + " = ?",
+                new String[]{"0"});
+
+        Log.d(TAG, "Claimed " + rowsAffected + " guest records for new user ID: " + newUserId);
+        return rowsAffected;
+    }
+
 }

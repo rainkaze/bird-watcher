@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor; // 添加无参构造
 @NoArgsConstructor // Lombok 会生成一个无参构造函数
 public class BirdRecord implements Parcelable {
     private long id = -1; // 记录ID，用于数据库操作, -1 表示尚未持久化
+    private long clientId; // 跨设备唯一ID
     private String title; // 标题
     private String content; // 内容
     private String birdName; // 鸟名
@@ -22,6 +23,10 @@ public class BirdRecord implements Parcelable {
     private List<String> photoUris = new ArrayList<>(); // 照片URI列表 (存储为String)
     private String audioUri; // 音频URI (存储为String)
     private long recordDateTimestamp; // 记录日期 (存储为 long 类型的时间戳)
+
+    private long userId; // 关联的用户ID
+    private int syncStatus; // 0:未同步, 1:已同步, 2:待更新
+
 
     // 便捷构造函数 (不含ID)
     public BirdRecord(String title, String birdName, String content, Date recordDate) {
@@ -59,6 +64,10 @@ public class BirdRecord implements Parcelable {
         photoUris = in.createStringArrayList();
         audioUri = in.readString();
         recordDateTimestamp = in.readLong();
+
+        clientId = in.readLong();
+        userId = in.readLong();
+        syncStatus = in.readInt();
     }
 
     public static final Creator<BirdRecord> CREATOR = new Creator<BirdRecord>() {
@@ -91,6 +100,10 @@ public class BirdRecord implements Parcelable {
         dest.writeStringList(photoUris);
         dest.writeString(audioUri);
         dest.writeLong(recordDateTimestamp);
+
+        dest.writeLong(clientId);
+        dest.writeLong(userId);
+        dest.writeInt(syncStatus);
     }
 
     // toString() 方法，方便调试

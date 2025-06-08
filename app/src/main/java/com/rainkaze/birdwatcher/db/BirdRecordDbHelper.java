@@ -7,10 +7,10 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class BirdRecordDbHelper extends SQLiteOpenHelper {
 
     public static final String DATABASE_NAME = "BirdWatcher.db";
-    public static final int DATABASE_VERSION = 2; // 增加了对 photoUris 和 audioUri 的处理
+    public static final int DATABASE_VERSION = 3; // <-- 版本升级
 
     public static final String TABLE_RECORDS = "records";
-    public static final String COLUMN_ID = "_id"; // 主键通常以下划线开头
+    public static final String COLUMN_ID = "_id";
     public static final String COLUMN_TITLE = "title";
     public static final String COLUMN_CONTENT = "content";
     public static final String COLUMN_BIRD_NAME = "bird_name";
@@ -18,13 +18,18 @@ public class BirdRecordDbHelper extends SQLiteOpenHelper {
     public static final String COLUMN_LATITUDE = "latitude";
     public static final String COLUMN_LONGITUDE = "longitude";
     public static final String COLUMN_DETAILED_LOCATION = "detailed_location";
-    public static final String COLUMN_PHOTO_URIS = "photo_uris"; // 存储 JSON 字符串化的列表
+    public static final String COLUMN_PHOTO_URIS = "photo_uris";
     public static final String COLUMN_AUDIO_URI = "audio_uri";
     public static final String COLUMN_RECORD_DATE_TIMESTAMP = "record_date_timestamp";
+    // --- 新增字段 ---
+    public static final String COLUMN_USER_ID = "user_id";
+    public static final String COLUMN_CLIENT_ID = "client_id";
+    public static final String COLUMN_SYNC_STATUS = "sync_status"; // 0:未同步, 1:已同步, 2:待更新
 
     private static final String TABLE_CREATE =
             "CREATE TABLE " + TABLE_RECORDS + " (" +
                     COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    COLUMN_CLIENT_ID + " INTEGER UNIQUE, " +
                     COLUMN_TITLE + " TEXT NOT NULL, " +
                     COLUMN_BIRD_NAME + " TEXT NOT NULL, " +
                     COLUMN_SCIENTIFIC_NAME + " TEXT, " +
@@ -32,9 +37,12 @@ public class BirdRecordDbHelper extends SQLiteOpenHelper {
                     COLUMN_LATITUDE + " REAL, " +
                     COLUMN_LONGITUDE + " REAL, " +
                     COLUMN_DETAILED_LOCATION + " TEXT, " +
-                    COLUMN_PHOTO_URIS + " TEXT, " + // 存储照片URI列表的JSON字符串
+                    COLUMN_PHOTO_URIS + " TEXT, " +
                     COLUMN_AUDIO_URI + " TEXT, " +
-                    COLUMN_RECORD_DATE_TIMESTAMP + " INTEGER NOT NULL" +
+                    COLUMN_RECORD_DATE_TIMESTAMP + " INTEGER NOT NULL," +
+                    // --- 添加新列到创建语句 ---
+                    COLUMN_USER_ID + " INTEGER, " +
+                    COLUMN_SYNC_STATUS + " INTEGER NOT NULL DEFAULT 0" +
                     ");";
 
     public BirdRecordDbHelper(Context context) {
@@ -48,16 +56,22 @@ public class BirdRecordDbHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // 简单的升级策略：删除旧表，创建新表
-        // 注意：这会丢失所有现有数据，生产环境中需要更复杂的迁移策略
+        // 升级策略
         if (oldVersion < 2) {
-            // 如果是从版本1升级到版本2，可以尝试保留数据并添加新列
-            // 这里为了简单，还是直接删除重建
-            // 但一个更平滑的升级可能是:
-            // db.execSQL("ALTER TABLE " + TABLE_RECORDS + " ADD COLUMN " + COLUMN_PHOTO_URIS + " TEXT;");
-            // db.execSQL("ALTER TABLE " + TABLE_RECORDS + " ADD COLUMN " + COLUMN_AUDIO_URI + " TEXT;");
+            // 从版本1升级，添加version 2的列
+            db.execSQL("ALTER TABLE " + TABLE_RECORDS + " ADD COLUMN " + COLUMN_PHOTO_URIS + " TEXT;");
+            db.execSQL("ALTER TABLE " + TABLE_RECORDS + " ADD COLUMN " + COLUMN_AUDIO_URI + " TEXT;");
         }
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_RECORDS);
-        onCreate(db);
+        if (oldVersion < 3) {
+            // 从版本2升级，添加version 3的列
+            db.execSQL("ALTER TABLE " + TABLE_RECORDS + " ADD COLUMN " + COLUMN_USER_ID + " INTEGER;");
+            db.execSQL("ALTER TABLE " + TABLE_RECORDS + " ADD COLUMN " + COLUMN_SYNC_STATUS + " INTEGER NOT NULL DEFAULT 0;");
+        }if (oldVersion < 4) {
+            // 从版本3升级到版本4
+            db.execSQL("ALTER TABLE " + TABLE_RECORDS + " ADD COLUMN " + COLUMN_CLIENT_ID + " INTEGER;");
+            // 将现有的 _id 复制给 client_id 作为初始值，并设为唯一
+            db.execSQL("UPDATE " + TABLE_RECORDS + " SET " + COLUMN_CLIENT_ID + " = " + COLUMN_ID + ";");
+            // 注意: 在实际生产环境中，添加 UNIQUE 约束需要更复杂的处理，但对于测试这样是可行的。
+        }
     }
 }
