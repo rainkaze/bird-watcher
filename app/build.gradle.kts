@@ -61,6 +61,10 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
+    // 添加Gson用于解析JSON
+    implementation("com.google.code.gson:gson:2.9.0")
+    implementation("androidx.recyclerview:recyclerview:1.3.2") //确保有RecyclerView
+    implementation("androidx.cardview:cardview:1.0.0") //美化列表项
     //baidumap依赖
 
 //    implementation(libs.baidumap.map)
