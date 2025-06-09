@@ -559,7 +559,6 @@ public class AddEditRecordActivity extends AppCompatActivity {
             try {
                 mediaRecorder.stop();
             } catch (RuntimeException e) {
-                Log.w(TAG, "停止录音时间错误: " + e.getMessage());
                 if (audioFile != null && audioFile.exists()) {
                     audioFile.delete();
                 }

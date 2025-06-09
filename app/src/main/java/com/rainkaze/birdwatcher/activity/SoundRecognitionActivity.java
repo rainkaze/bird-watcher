@@ -198,7 +198,6 @@ public class SoundRecognitionActivity extends AppCompatActivity {
             try {
                 mediaRecorder.stop();
             } catch (RuntimeException stopException) {
-                Log.w(TAG, "RuntimeException on stopping MediaRecorder.", stopException);
             } finally {
                 mediaRecorder.release();
                 mediaRecorder = null;
