@@ -209,7 +209,6 @@ public class MapFragment extends Fragment implements OnGetPoiSearchResultListene
 
     @Override
     public void onMapLoaded() {
-        Log.d(TAG, "Map has been loaded. Loading records...");
         loadRecordsForMap();
     }
 
@@ -252,8 +251,6 @@ public class MapFragment extends Fragment implements OnGetPoiSearchResultListene
         allRecordsWithLocation = allRecords.stream()
                 .filter(r -> !Double.isNaN(r.getLatitude()) && !Double.isNaN(r.getLongitude()))
                 .collect(Collectors.toList());
-        Log.d(TAG, "Loaded " + allRecordsWithLocation.size() + " records with location.");
-
         if (areRecordsVisible) {
             updateMapWithRecordsAndZoom(allRecordsWithLocation);
         }
@@ -355,7 +352,6 @@ public class MapFragment extends Fragment implements OnGetPoiSearchResultListene
         BitmapDescriptor descriptor = BitmapDescriptorFactory.fromView(markerView);
 
         if (descriptor == null) {
-            Log.e(TAG, "Failed to create BitmapDescriptor from view for record: " + record.getTitle());
             descriptor = BitmapDescriptorFactory.fromResource(R.drawable.ic_bird_default);
         }
         LatLng position = new LatLng(record.getLatitude(), record.getLongitude());
@@ -368,30 +364,23 @@ public class MapFragment extends Fragment implements OnGetPoiSearchResultListene
             marker.setExtraInfo(bundle);
         }
     }
-
-    // 修改点: 核心逻辑修改，填充更详细信息并修复图片尺寸
     private void showRecordInfoWindow(final BirdRecord record) {
         final LatLng position = new LatLng(record.getLatitude(), record.getLongitude());
         View infoView = LayoutInflater.from(getContext()).inflate(R.layout.info_window_record, null, false);
 
-        // 获取所有视图
         ImageView ivThumbnail = infoView.findViewById(R.id.iv_info_thumbnail);
         TextView tvTitle = infoView.findViewById(R.id.tv_info_title);
         TextView tvBirdName = infoView.findViewById(R.id.tv_info_bird_name);
         TextView tvContent = infoView.findViewById(R.id.tv_info_content); // 新增
         TextView tvDateLocation = infoView.findViewById(R.id.tv_info_date_location);
 
-        // 填充标题
         tvTitle.setText(record.getTitle());
-
-        // 填充鸟名和学名
         String birdNameText = record.getBirdName();
         if (!TextUtils.isEmpty(record.getScientificName())) {
             birdNameText += " (" + record.getScientificName() + ")";
         }
         tvBirdName.setText(birdNameText);
 
-        // 填充详细内容
         if (!TextUtils.isEmpty(record.getContent())) {
             tvContent.setVisibility(View.VISIBLE);
             tvContent.setText(record.getContent());
@@ -399,31 +388,24 @@ public class MapFragment extends Fragment implements OnGetPoiSearchResultListene
             tvContent.setVisibility(View.GONE);
         }
 
-        // 填充日期和地点
         String date = record.getRecordDate() != null ? dateFormat.format(record.getRecordDate()) : "未知日期";
         String location = TextUtils.isEmpty(record.getDetailedLocation()) ? "未知地点" : record.getDetailedLocation();
         tvDateLocation.setText(date + " | " + location);
-
-        // 准备一个在图片加载完成后显示InfoWindow的动作
         Runnable showInfoWindowRunnable = () -> {
             mBaiduMap.hideInfoWindow();
             mInfoWindow = new InfoWindow(BitmapDescriptorFactory.fromView(infoView), position, -200, null);
             mBaiduMap.showInfoWindow(mInfoWindow);
         };
-
-        // 加载图片
         if (record.getPhotoUris() != null && !record.getPhotoUris().isEmpty()) {
             ivThumbnail.setVisibility(View.VISIBLE);
-
-            // 将dp尺寸转换为像素
             final int widthInPx = (int) (250 * getResources().getDisplayMetrics().density);
             final int heightInPx = (int) (120 * getResources().getDisplayMetrics().density);
 
             Glide.with(requireContext())
                     .asBitmap()
                     .load(Uri.parse(record.getPhotoUris().get(0)))
-                    .override(widthInPx, heightInPx) // **修改点: 明确尺寸**
-                    .centerCrop()                    // **修改点: 让Glide裁剪**
+                    .override(widthInPx, heightInPx)
+                    .centerCrop()
                     .placeholder(R.drawable.ic_launcher_background)
                     .error(R.drawable.ic_picture_error)
                     .into(new CustomTarget<Bitmap>() {
@@ -527,7 +509,6 @@ public class MapFragment extends Fragment implements OnGetPoiSearchResultListene
                     mMapView.getWidth() - 150, mMapView.getHeight() - 150);
             mBaiduMap.animateMapStatus(update);
         } catch(Exception e) {
-            Log.e(TAG, "Error zooming to fit records", e);
         }
     }
 
@@ -543,7 +524,6 @@ public class MapFragment extends Fragment implements OnGetPoiSearchResultListene
             option.setIsNeedAddress(true);
             mLocationClient.setLocOption(option);
         } catch (Exception e) {
-            Log.e(TAG, "Failed to init Baidu Location client", e);
         }
     }
 
@@ -601,7 +581,7 @@ public class MapFragment extends Fragment implements OnGetPoiSearchResultListene
                 mLocationClient.start();
                 panToMyLocation();
             } else {
-                Toast.makeText(getContext(), "定位权限被拒绝", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(getContext(), "定位权限被拒绝", Toast.LENGTH_SHORT).show();
             }
         }
     }

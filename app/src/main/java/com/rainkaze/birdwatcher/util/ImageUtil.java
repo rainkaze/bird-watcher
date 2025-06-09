@@ -40,12 +40,7 @@ public class ImageUtil {
                 newHeight = maxDimension;
                 newWidth = (int) (originalWidth * ((float) maxDimension / originalHeight));
             }
-            Log.d(TAG, "Scaling bitmap from " + originalWidth + "x" + originalHeight + " to " + newWidth + "x" + newHeight);
             Bitmap scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, newWidth, newHeight, true);
-            // 注意：如果原始Bitmap不再需要，且 createScaledBitmap 返回了新的实例，应当考虑回收 originalBitmap
-            // if (scaledBitmap != originalBitmap) {
-            //     originalBitmap.recycle();
-            // }
             return scaledBitmap;
         }
         return originalBitmap;
@@ -65,26 +60,22 @@ public class ImageUtil {
         try {
             inputStream = context.getContentResolver().openInputStream(imageUri);
             if (inputStream == null) {
-                throw new FileNotFoundException("Cannot open input stream from URI: " + imageUri);
+                throw new FileNotFoundException("打开图片错误: " + imageUri);
             }
 
             Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
             if (bitmap == null) {
-                throw new IOException("Failed to decode bitmap from URI: " + imageUri);
+                throw new IOException("图片编码失败: " + imageUri);
             }
 
-            // API 要求: 最短边至少15px，最长边最大4096px, base64编码后大小不超过4M
-            // 此处进行缩放和压缩
-            bitmap = scaleAndCompressBitmap(bitmap, 4096, 85); // 最大边4096, JPEG质量85%
+            bitmap = scaleAndCompressBitmap(bitmap, 4096, 85);
 
             baos = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 85, baos); // 压缩为JPEG
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 85, baos);
             byte[] imageBytes = baos.toByteArray();
 
-            // Base64 编码 (不带编码头 "data:image/jpeg;base64,")
             String base64Image = Base64.encodeToString(imageBytes, Base64.NO_WRAP);
 
-            // URL Encode
             return URLEncoder.encode(base64Image, "UTF-8");
 
         } finally {
@@ -92,14 +83,12 @@ public class ImageUtil {
                 try {
                     inputStream.close();
                 } catch (IOException e) {
-                    Log.e(TAG, "Error closing input stream", e);
                 }
             }
             if (baos != null) {
                 try {
                     baos.close();
                 } catch (IOException e) {
-                    Log.e(TAG, "Error closing byte array output stream", e);
                 }
             }
         }
@@ -108,7 +97,7 @@ public class ImageUtil {
 
     /**
      * 从 URI 加载图片，转换为带MIME头的 Base64 编码字符串。
-     * 例如: "data:image/jpeg;base64,..."
+     *
      * @param context Context 对象.
      * @param imageUri 图片的 URI.
      * @return 带头的 Base64 图片字符串, 如果失败返回 null.
@@ -119,43 +108,35 @@ public class ImageUtil {
         try {
             inputStream = context.getContentResolver().openInputStream(imageUri);
             if (inputStream == null) {
-                throw new FileNotFoundException("Cannot open input stream from URI: " + imageUri);
+                throw new FileNotFoundException("引入图片错误:  " + imageUri);
             }
 
             Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
             if (bitmap == null) {
-                throw new IOException("Failed to decode bitmap from URI: " + imageUri);
+                throw new IOException("加载图片错误: " + imageUri);
             }
 
-            // 适当缩放和压缩以减小体积
-            bitmap = scaleAndCompressBitmap(bitmap, 1024, 80); // 最大边1024px, 质量80%
+            bitmap = scaleAndCompressBitmap(bitmap, 1024, 80);
 
             baos = new ByteArrayOutputStream();
             bitmap.compress(Bitmap.CompressFormat.JPEG, 80, baos);
             byte[] imageBytes = baos.toByteArray();
-
-            // Base64 编码
             String base64Image = Base64.encodeToString(imageBytes, Base64.NO_WRAP);
-
-            // 添加MIME头
             return "data:image/jpeg;base64," + base64Image;
 
         } catch (IOException e) {
-            Log.e(TAG, "Error converting URI to Base64 with header", e);
             return null;
         } finally {
             if (inputStream != null) {
                 try {
                     inputStream.close();
                 } catch (IOException e) {
-                    Log.e(TAG, "Error closing input stream", e);
                 }
             }
             if (baos != null) {
                 try {
                     baos.close();
                 } catch (IOException e) {
-                    Log.e(TAG, "Error closing byte array output stream", e);
                 }
             }
         }

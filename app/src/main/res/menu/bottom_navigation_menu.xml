@@ -2,23 +2,23 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/navigation_home"
-        android:icon="@mipmap/ic_home"
+        android:icon="@drawable/ic_home"
         android:title="首页" />
     <item
         android:id="@+id/navigation_map"
-        android:icon="@mipmap/ic_map"
+        android:icon="@drawable/ic_map"
         android:title="地图" />
     <item
         android:id="@+id/navigation_identify"
-        android:icon="@mipmap/ic_identify"
+        android:icon="@drawable/ic_identify"
         android:title="识鸟" />
     <item
         android:id="@+id/navigation_record"
-        android:icon="@mipmap/ic_record"
+        android:icon="@drawable/ic_record"
         android:title="记鸟" />
     <item
         android:id="@+id/navigation_knowledge"
-        android:icon="@mipmap/ic_knowledge"
+        android:icon="@drawable/ic_knowledge"
         android:title="科普" />
 
 </menu>

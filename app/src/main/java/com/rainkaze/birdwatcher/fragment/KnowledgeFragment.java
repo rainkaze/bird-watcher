@@ -67,7 +67,7 @@ public class KnowledgeFragment extends Fragment implements BirdAdapter.OnBirdCli
 
         } catch (IOException e) {
             e.printStackTrace();
-            birdList = new ArrayList<>(); // 在出错时初始化为空列表
+            birdList = new ArrayList<>();
         }
     }
 
@@ -78,7 +78,7 @@ public class KnowledgeFragment extends Fragment implements BirdAdapter.OnBirdCli
                 if (adapter != null) {
                     adapter.filter(query);
                 }
-                return true; // 表示事件已处理
+                return true;
             }
 
             @Override
@@ -86,7 +86,7 @@ public class KnowledgeFragment extends Fragment implements BirdAdapter.OnBirdCli
                 if (adapter != null) {
                     adapter.filter(newText);
                 }
-                return true; // 表示事件已处理
+                return true;
             }
         });
     }
