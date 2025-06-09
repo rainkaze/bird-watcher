@@ -9,4 +9,32 @@
     <color name="bird_hot">#FF5722</color>     <!-- 热门鸟类颜色 - 橙色 -->
     <color name="bird_popular">#4CAF50</color> <!-- 受欢迎鸟类颜色 - 绿色 -->
     <color name="bird_normal">#2196F3</color>  <!-- 普通鸟类颜色 - 蓝色 -->
+
+
+    <color name="app_background_color">#F5F5F5</color>
+
+
+    <color name="record_fragment_background">#F5F5F5</color>
+    <color name="color_white">#FFFFFF</color>
+    <color name="color_darker_gray">#FFAAAAAA</color>
+
+
+    <color name="info_window_title_color">#FF5722</color>
+    <color name="info_window_description_color">#666666</color>
+
+
+    <color name="infowindow_content_text_color">#555555</color>
+    <color name="infowindow_meta_text_color">#666666</color>
+
+
+    <color name="item_text_primary_color">#000000</color>
+    <color name="item_text_secondary_color">#FFAAAAAA</color>
+
+
+    <color name="item_stat_card_stroke_color">#11000000</color>
+    <color name="item_stat_text_primary">#FF000000</color>
+    <color name="item_stat_text_secondary">#FF666666</color>
+
+
+    <color name="custom_marker_stroke_color">#CCCCCC</color>
 </resources>

@@ -2,17 +2,17 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/sort_time_desc"
-        android:title="按时间倒序" />
+        android:title="@string/sort_option_time_desc" />
     <item
         android:id="@+id/sort_time_asc"
-        android:title="按时间正序" />
+        android:title="@string/sort_option_time_asc" />
     <item
         android:id="@+id/sort_name_asc"
-        android:title="按鸟名正序 (A-Z)" />
+        android:title="@string/sort_option_name_asc" />
     <item
         android:id="@+id/sort_name_desc"
-        android:title="按鸟名逆序 (Z-A)" />
+        android:title="@string/sort_option_name_desc" />
     <item
         android:id="@+id/sort_has_photo"
-        android:title="有图片的在前" />
+        android:title="@string/sort_option_has_photo" />
 </menu>

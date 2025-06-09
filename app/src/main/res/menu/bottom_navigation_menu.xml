@@ -3,22 +3,22 @@
     <item
         android:id="@+id/navigation_home"
         android:icon="@drawable/ic_home"
-        android:title="首页" />
+        android:title="@string/menu_title_home" />
     <item
         android:id="@+id/navigation_map"
         android:icon="@drawable/ic_map"
-        android:title="地图" />
+        android:title="@string/menu_title_map" />
     <item
         android:id="@+id/navigation_identify"
         android:icon="@drawable/ic_identify"
-        android:title="识鸟" />
+        android:title="@string/menu_title_identify" />
     <item
         android:id="@+id/navigation_record"
         android:icon="@drawable/ic_record"
-        android:title="记鸟" />
+        android:title="@string/menu_title_record" />
     <item
         android:id="@+id/navigation_knowledge"
         android:icon="@drawable/ic_knowledge"
-        android:title="科普" />
+        android:title="@string/menu_title_knowledge" />
 
 </menu>

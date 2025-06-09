@@ -17,29 +17,29 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:orientation="vertical"
-        android:padding="8dp"
-        android:elevation="8dp">
+        android:padding="@dimen/map_container_padding"
+        android:elevation="@dimen/map_container_elevation">
 
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardCornerRadius="24dp"
-            app:cardElevation="4dp">
+            app:cardCornerRadius="@dimen/map_search_card_corner_radius"
+            app:cardElevation="@dimen/map_search_card_elevation">
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
+                android:layout_height="@dimen/map_search_item_size"
                 android:orientation="horizontal"
                 android:gravity="center_vertical">
 
                 <ImageView
                     android:id="@+id/iv_search_mode_toggle"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:padding="12dp"
+                    android:layout_width="@dimen/map_search_item_size"
+                    android:layout_height="@dimen/map_search_item_size"
+                    android:padding="@dimen/map_search_icon_padding"
                     android:src="@drawable/ic_bird"
                     android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="切换搜索模式"
+                    android:contentDescription="@string/map_cd_toggle_search_mode"
                     app:tint="?attr/colorControlNormal"/>
 
                 <androidx.appcompat.widget.SearchView
@@ -58,8 +58,8 @@
             android:id="@+id/rv_map_search_results"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:maxHeight="250dp"
-            android:layout_marginTop="8dp"
+            android:maxHeight="@dimen/map_search_results_max_height"
+            android:layout_marginTop="@dimen/map_container_padding"
             android:background="@drawable/bg_rounded_white"
             android:visibility="gone"
             tools:listitem="@layout/item_record_search"
@@ -74,14 +74,14 @@
         android:layout_alignParentBottom="true"
         android:layout_toStartOf="@id/btn_my_location"
         android:layout_alignWithParentIfMissing="true"
-        android:layout_marginBottom="16dp"
-        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="@dimen/map_fab_margin"
+        android:layout_marginEnd="@dimen/map_fab_margin"
         app:fabSize="normal"
         android:src="@drawable/ic_layers"
-        android:contentDescription="切换记录可见性"
+        android:contentDescription="@string/map_cd_toggle_records_visibility"
         app:backgroundTint="@color/white"
         app:tint="?attr/colorControlNormal"
-        app:elevation="6dp" />
+        app:elevation="@dimen/map_fab_elevation" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/btn_my_location"
@@ -89,11 +89,11 @@
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
-        android:layout_margin="16dp"
+        android:layout_margin="@dimen/map_fab_margin"
         android:src="@drawable/ic_my_location"
         android:contentDescription="@string/locate_me"
         app:backgroundTint="@color/white"
         app:tint="?attr/colorPrimary"
-        app:elevation="6dp" />
+        app:elevation="@dimen/map_fab_elevation" />
 
 </RelativeLayout>

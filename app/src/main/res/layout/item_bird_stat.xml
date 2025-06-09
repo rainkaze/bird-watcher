@@ -4,8 +4,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:paddingHorizontal="16dp"
-    android:paddingVertical="12dp">
+    android:paddingHorizontal="@dimen/item_ranking_padding_horizontal"
+    android:paddingVertical="@dimen/item_ranking_padding_vertical">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -15,11 +15,11 @@
 
         <TextView
             android:id="@+id/tv_stat_rank"
-            android:layout_width="24dp"
+            android:layout_width="@dimen/item_ranking_rank_width"
             android:layout_height="wrap_content"
-            android:textSize="14sp"
+            android:textSize="@dimen/item_ranking_secondary_text_size"
             android:textStyle="bold"
-            tools:text="1." />
+            tools:text="@string/tools_stat_rank_sample" />
 
         <TextView
             android:id="@+id/tv_stat_bird_name"
@@ -29,25 +29,25 @@
             android:ellipsize="end"
             android:maxLines="1"
             android:textColor="?android:attr/textColorPrimary"
-            android:textSize="16sp"
-            tools:text="白头翁" />
+            android:textSize="@dimen/item_ranking_primary_text_size"
+            tools:text="@string/tools_stat_name_sample" />
 
         <TextView
             android:id="@+id/tv_stat_count"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="?android:attr/textColorSecondary"
-            android:textSize="14sp"
-            tools:text="15 次" />
+            android:textSize="@dimen/item_ranking_secondary_text_size"
+            tools:text="@string/tools_stat_count_sample" />
     </LinearLayout>
 
     <ProgressBar
         android:id="@+id/pb_stat_bar"
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="match_parent"
-        android:layout_height="6dp"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="6dp"
+        android:layout_height="@dimen/item_ranking_progress_height"
+        android:layout_marginStart="@dimen/item_ranking_progress_margin_start"
+        android:layout_marginTop="@dimen/item_ranking_progress_margin_top"
         android:max="100"
         android:progressDrawable="@drawable/bg_progress_bar_stat"
         tools:progress="80" />

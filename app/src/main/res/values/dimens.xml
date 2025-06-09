@@ -1,0 +1,219 @@
+<resources>
+
+    <!--activity_add_edit_record.xml-->
+    <dimen name="margin_tiny">4dp</dimen>
+    <dimen name="margin_small">8dp</dimen>
+    <dimen name="margin_medium">12dp</dimen>
+    <dimen name="margin_large">20dp</dimen>
+    <dimen name="margin_xlarge">24dp</dimen>
+    <dimen name="padding_small">8dp</dimen>
+    <dimen name="padding_layout_default">16dp</dimen>
+    <dimen name="preview_min_height">100dp</dimen>
+    <dimen name="space_large_vertical">32dp</dimen>
+
+    <!--activity_bird_detail.xml-->
+    <dimen name="font_size_xl">24sp</dimen>
+    <dimen name="font_size_lg">18sp</dimen>
+    <dimen name="font_size_m">16sp</dimen>
+    <dimen name="spacing_xs">4dp</dimen>
+    <dimen name="spacing_s">8dp</dimen>
+    <dimen name="spacing_m">16dp</dimen>
+    <dimen name="spacing_xl">24dp</dimen>
+    <dimen name="view_padding_medium">16dp</dimen>
+
+
+    <!--activity_image_recognition.xml-->
+    <dimen name="margin_8dp">8dp</dimen>
+    <dimen name="margin_16dp">16dp</dimen>
+    <dimen name="margin_24dp">24dp</dimen>
+    <dimen name="text_size_18sp">18sp</dimen>
+    <dimen name="text_size_16sp">16sp</dimen>
+    <dimen name="elevation_default">4dp</dimen>
+    <item name="image_preview_height_percentage" format="float" type="dimen">0.5</item>
+
+    <!--activity_sound_recognition.xml-->
+    <dimen name="margin_small_8dp">8dp</dimen>
+    <dimen name="margin_large_24dp">24dp</dimen>
+    <dimen name="margin_32dp">32dp</dimen>
+    <dimen name="spacing_default_16dp">16dp</dimen>
+    <dimen name="padding_large_20dp">20dp</dimen>
+    <dimen name="font_size_standard">16sp</dimen>
+    <dimen name="font_size_large_18sp">18sp</dimen>
+    <dimen name="toolbar_elevation_4dp">4dp</dimen>
+
+
+    <!--activity_login.xml-->
+    <dimen name="dialog_padding">24dp</dimen>
+    <dimen name="dialog_field_spacing">16dp</dimen>
+
+
+    <!--fragment_home.xml-->
+    <dimen name="text_size_normal">16sp</dimen>
+    <dimen name="text_size_small">12sp</dimen>
+    <dimen name="home_main_padding">8dp</dimen>
+    <dimen name="home_title_margin_top">20dp</dimen>
+    <dimen name="home_empty_view_padding">32dp</dimen>
+    <dimen name="home_header_padding_horizontal">16dp</dimen>
+    <dimen name="home_header_padding_vertical">16dp</dimen>
+    <dimen name="home_avatar_size">48dp</dimen>
+    <dimen name="home_avatar_margin_start">12dp</dimen>
+    <dimen name="home_card_corner_radius">12dp</dimen>
+    <dimen name="home_card_elevation">4dp</dimen>
+    <dimen name="divider_thickness">1dp</dimen>
+
+
+    <!--fragment_identify.xml-->
+    <dimen name="identify_page_padding">16dp</dimen>
+    <dimen name="identify_card_elevation">4dp</dimen>
+    <dimen name="identify_card_corner_radius">8dp</dimen>
+    <dimen name="identify_card_vertical_margin">16dp</dimen>
+    <dimen name="identify_card_content_padding">16dp</dimen>
+    <dimen name="identify_icon_size">40dp</dimen>
+    <dimen name="identify_card_text_size">18sp</dimen>
+
+
+    <!--fragment_knowledge.xml-->
+    <dimen name="knowledge_search_margin">8dp</dimen>
+
+
+    <!--fragment_map.xml-->
+    <dimen name="map_container_padding">8dp</dimen>
+    <dimen name="map_container_elevation">8dp</dimen>
+    <dimen name="map_search_card_corner_radius">24dp</dimen>
+    <dimen name="map_search_card_elevation">4dp</dimen>
+    <dimen name="map_search_item_size">48dp</dimen>
+    <dimen name="map_search_icon_padding">12dp</dimen>
+    <dimen name="map_search_results_max_height">250dp</dimen>
+    <dimen name="map_fab_margin">16dp</dimen>
+    <dimen name="map_fab_elevation">6dp</dimen>
+
+
+     <!--fragment_record.xml-->
+    <dimen name="elevation_zero">0dp</dimen>
+    <dimen name="record_search_bar_height">48dp</dimen>
+    <dimen name="record_search_card_margin">16dp</dimen>
+    <dimen name="record_search_card_corner_radius">24dp</dimen>
+    <dimen name="record_search_card_elevation">4dp</dimen>
+    <dimen name="record_list_padding_top">8dp</dimen>
+    <dimen name="record_list_padding_bottom">80dp</dimen>
+    <dimen name="record_fab_elevation">6dp</dimen>
+    <dimen name="record_fab_pressed_translation_z">12dp</dimen>
+
+
+    <!--info_window_bird.xml-->
+    <dimen name="info_window_width">200dp</dimen>
+    <dimen name="info_window_padding">12dp</dimen>
+    <dimen name="info_window_title_text_size">16sp</dimen>
+    <dimen name="info_window_margin_small">4dp</dimen>
+    <dimen name="info_window_margin_medium">8dp</dimen>
+    <dimen name="info_window_popularity_padding_vertical">2dp</dimen>
+    <dimen name="info_window_popularity_text_size">12sp</dimen>
+    <dimen name="info_window_description_text_size">14sp</dimen>
+
+
+    <!--info_window_record.xml-->
+    <dimen name="infowindow_record_width">250dp</dimen>
+    <dimen name="spacing_zero">0dp</dimen>
+    <dimen name="infowindow_thumbnail_height">120dp</dimen>
+    <dimen name="infowindow_content_padding">12dp</dimen>
+    <dimen name="infowindow_text_size_title">16sp</dimen>
+    <dimen name="infowindow_spacing_small">4dp</dimen>
+    <dimen name="infowindow_text_size_subtitle">14sp</dimen>
+    <dimen name="infowindow_spacing_medium">8dp</dimen>
+    <dimen name="infowindow_text_size_body">13sp</dimen>
+    <dimen name="infowindow_text_size_meta">12sp</dimen>
+
+
+
+    <!--item_bird.xml-->
+    <dimen name="item_bird_margin_horizontal">8dp</dimen>
+    <dimen name="item_bird_margin_vertical">4dp</dimen>
+    <dimen name="item_bird_corner_radius">4dp</dimen>
+    <dimen name="item_bird_content_padding">16dp</dimen>
+    <dimen name="item_bird_primary_text_size">18sp</dimen>
+    <dimen name="item_bird_secondary_text_size">14sp</dimen>
+
+
+    <!--item_bird_search.xml-->
+    <dimen name="item_stat_margin_vertical">4dp</dimen>
+    <dimen name="item_stat_corner_radius">8dp</dimen>
+    <dimen name="item_stat_elevation">2dp</dimen>
+    <dimen name="item_stat_stroke_width">1dp</dimen>
+    <dimen name="item_stat_padding">12dp</dimen>
+    <dimen name="item_stat_min_height">64dp</dimen>
+    <dimen name="item_stat_icon_size">48dp</dimen>
+    <dimen name="item_stat_font_size_primary">16sp</dimen>
+    <dimen name="item_stat_font_size_secondary">14sp</dimen>
+    <dimen name="spacing_none">0dp</dimen>
+    <dimen name="item_stat_button_icon_size">24dp</dimen>
+
+
+    <!--item_bird_stat.xml-->
+    <dimen name="item_ranking_padding_horizontal">16dp</dimen>
+    <dimen name="item_ranking_padding_vertical">12dp</dimen>
+    <dimen name="item_ranking_rank_width">24dp</dimen>
+    <dimen name="item_ranking_secondary_text_size">14sp</dimen>
+    <dimen name="item_ranking_primary_text_size">16sp</dimen>
+    <dimen name="item_ranking_progress_height">6dp</dimen>
+    <dimen name="item_ranking_progress_margin_start">24dp</dimen>
+    <dimen name="item_ranking_progress_margin_top">6dp</dimen>
+
+
+    <!--item_photo_preview.xml-->
+    <dimen name="photo_preview_item_size">80dp</dimen>
+    <dimen name="photo_preview_item_margin_end">8dp</dimen>
+
+
+
+    <!--item_photo_preview_with_remove.xml-->
+    <dimen name="photo_preview_removable_item_size">96dp</dimen>
+    <dimen name="photo_preview_removable_item_margin_end">8dp</dimen>
+    <dimen name="photo_preview_remove_button_size">24dp</dimen>
+    <dimen name="photo_preview_remove_button_margin">4dp</dimen>
+
+
+
+    <!--item_poi_result.xml-->
+    <dimen name="item_poi_padding_horizontal">16dp</dimen>
+    <dimen name="item_poi_padding_vertical">12dp</dimen>
+    <dimen name="item_poi_text_size_primary">16sp</dimen>
+    <dimen name="item_poi_spacing_vertical">4dp</dimen>
+    <dimen name="item_poi_text_size_secondary">14sp</dimen>
+
+
+
+    <!--item_recognition_result.xml-->
+    <dimen name="item_recognition_padding">12dp</dimen>
+    <dimen name="item_recognition_text_size_primary">18sp</dimen>
+    <dimen name="item_recognition_text_size_secondary">14sp</dimen>
+    <dimen name="item_recognition_spacing_small">4dp</dimen>
+    <dimen name="item_recognition_spacing_medium">8dp</dimen>
+
+
+    <!--item_record.xml-->
+    <dimen name="item_record_margin_horizontal">8dp</dimen>
+    <dimen name="item_record_margin_vertical">6dp</dimen>
+    <dimen name="item_record_elevation">3dp</dimen>
+    <dimen name="item_record_corner_radius">12dp</dimen>
+    <dimen name="item_record_padding">16dp</dimen>
+    <dimen name="item_record_thumbnail_size">72dp</dimen>
+    <dimen name="item_record_text_margin_start">16dp</dimen>
+    <dimen name="item_record_text_spacing">4dp</dimen>
+
+
+    <!--item_record_search.xml-->
+    <dimen name="item_search_padding">12dp</dimen>
+    <dimen name="item_search_text_size_primary">16sp</dimen>
+    <dimen name="item_search_text_size_secondary">14sp</dimen>
+    <dimen name="item_search_text_spacing">4dp</dimen>
+
+
+    <!--view_custom_marker.xml-->
+    <dimen name="custom_marker_width">90dp</dimen>
+    <dimen name="custom_marker_corner_radius">8dp</dimen>
+    <dimen name="custom_marker_elevation">2dp</dimen>
+    <dimen name="custom_marker_stroke_width">1dp</dimen>
+    <dimen name="custom_marker_image_height">65dp</dimen>
+    <dimen name="custom_marker_text_padding">4dp</dimen>
+    <dimen name="custom_marker_text_size">11sp</dimen>
+</resources>

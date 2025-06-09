@@ -3,12 +3,12 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="90dp"
+    android:layout_width="@dimen/custom_marker_width"
     android:layout_height="wrap_content"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="2dp"
-    app:strokeWidth="1dp"
-    app:strokeColor="#CCCCCC">
+    app:cardCornerRadius="@dimen/custom_marker_corner_radius"
+    app:cardElevation="@dimen/custom_marker_elevation"
+    app:strokeWidth="@dimen/custom_marker_stroke_width"
+    app:strokeColor="@color/custom_marker_stroke_color">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -19,7 +19,7 @@
         <ImageView
             android:id="@+id/iv_marker_thumbnail"
             android:layout_width="match_parent"
-            android:layout_height="65dp"
+            android:layout_height="@dimen/custom_marker_image_height"
             android:scaleType="centerCrop"
             tools:src="@mipmap/ic_launcher" />
 
@@ -30,10 +30,10 @@
             android:ellipsize="end"
             android:gravity="center"
             android:maxLines="2"
-            android:padding="4dp"
+            android:padding="@dimen/custom_marker_text_padding"
             android:textColor="@color/black"
-            android:textSize="11sp"
-            tools:text="一只漂亮的白鹭" />
+            android:textSize="@dimen/custom_marker_text_size"
+            tools:text="@string/tools_custom_marker_title" />
     </LinearLayout>
 
 </com.google.android.material.card.MaterialCardView>
