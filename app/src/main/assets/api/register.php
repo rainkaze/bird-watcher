@@ -10,7 +10,6 @@ if (empty($data['username']) || empty($data['password'])) {
 $username = $data['username'];
 $password = password_hash($data['password'], PASSWORD_DEFAULT);
 
-// 检查用户名是否已存在
 $stmt = $conn->prepare("SELECT id FROM users WHERE username = ?");
 $stmt->bind_param("s", $username);
 $stmt->execute();
