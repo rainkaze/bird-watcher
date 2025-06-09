@@ -78,7 +78,7 @@ try {
                 "detailed_location=?, photo_uris=?, audio_uri=?, record_date_timestamp=? " .
                 "WHERE user_id = ? AND client_id = ?"
             );
-            $update_stmt->bind_param("ssssddsssiii",
+            $update_stmt->bind_param("ssssddsssiis",
                 $title, $content, $birdName, $scientificName, $latitude, $longitude,
                 $detailedLocation, $photo_uris_json, $audioUri, $recordDateTimestamp,
                 $user_id, $clientId
@@ -90,7 +90,7 @@ try {
                 "INSERT INTO records (user_id, client_id, title, content, bird_name, scientific_name, latitude, longitude, " .
                 "detailed_location, photo_uris, audio_uri, record_date_timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
             );
-            $insert_stmt->bind_param("iisssssddssi",
+            $insert_stmt->bind_param("iissssddsssi",
                 $user_id, $clientId, $title, $content, $birdName, $scientificName,
                 $latitude, $longitude, $detailedLocation, $photo_uris_json, $audioUri, $recordDateTimestamp
             );
