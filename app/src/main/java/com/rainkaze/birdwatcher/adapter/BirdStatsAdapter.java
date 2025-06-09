@@ -17,12 +17,12 @@ import java.util.List;
 public class BirdStatsAdapter extends RecyclerView.Adapter<BirdStatsAdapter.ViewHolder> {
 
     private final List<BirdStat> stats;
-    private int maxCount = 1; // 避免除以零
+    private int maxCount = 1;
 
     public BirdStatsAdapter(List<BirdStat> stats) {
         this.stats = stats;
         if (stats != null && !stats.isEmpty()) {
-            this.maxCount = stats.get(0).getCount(); // 列表已排序，第一个是最大值
+            this.maxCount = stats.get(0).getCount();
         }
     }
 

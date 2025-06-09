@@ -13,13 +13,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class BirdRecord implements Parcelable {
 
-    // --- 修改开始: 使用 @SerializedName ---
 
-    @SerializedName("localId") // 在JSON序列化时使用localId，避免与服务端的id冲突
+    @SerializedName("localId")
     private long id = -1;
 
-    // value="id" 匹配服务端返回的 "id" 字段
-    // alternate="clientId" 兼容可能存在的 "clientId" 字段
     @SerializedName(value = "id", alternate = {"clientId"})
     private long clientId;
 
@@ -53,14 +50,9 @@ public class BirdRecord implements Parcelable {
     @SerializedName("recordDateTimestamp")
     private long recordDateTimestamp;
 
-    // 这部分是本地逻辑，不需要参与Gson序列化
     private transient long userId;
     private transient int syncStatus;
 
-    // --- 修改结束 ---
-
-
-    // 便捷构造函数 (不含ID)
     public BirdRecord(String title, String birdName, String content, Date recordDate) {
         this.title = title;
         this.birdName = birdName;
@@ -70,7 +62,6 @@ public class BirdRecord implements Parcelable {
         }
     }
 
-    // Getter 和 Setter for Date (方便使用)
     public Date getRecordDate() {
         return recordDateTimestamp > 0 ? new Date(recordDateTimestamp) : null;
     }
@@ -83,7 +74,6 @@ public class BirdRecord implements Parcelable {
         }
     }
 
-    // Parcelable 实现 (保持不变, 但要确保所有字段都已处理)
     protected BirdRecord(Parcel in) {
         id = in.readLong();
         clientId = in.readLong();

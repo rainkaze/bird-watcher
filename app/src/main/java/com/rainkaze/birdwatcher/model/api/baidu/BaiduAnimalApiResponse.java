@@ -12,7 +12,6 @@ public class BaiduAnimalApiResponse {
     @SerializedName("result")
     private List<BaiduAnimalResult> result;
 
-    // 用于捕获API层面返回的错误信息
     @SerializedName("error_msg")
     private String errorMsg;
 

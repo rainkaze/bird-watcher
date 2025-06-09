@@ -44,16 +44,15 @@ public class RecordFragment extends Fragment implements RecordAdapter.OnItemClic
     private TextView tvEmptyRecords;
     private FloatingActionButton fabAddRecord;
     private SearchView searchViewRecords;
-    private ImageButton btnSortRecords; // 新增排序按钮
+    private ImageButton btnSortRecords;
 
     private BirdRecordDao birdRecordDao;
     private ActivityResultLauncher<Intent> addEditRecordLauncher;
 
-    // 定义排序方式的枚举
     private enum SortMethod {
         TIME_DESC, TIME_ASC, NAME_ASC, NAME_DESC, HAS_PHOTO
     }
-    private SortMethod currentSortMethod = SortMethod.TIME_DESC; // 默认按时间倒序
+    private SortMethod currentSortMethod = SortMethod.TIME_DESC;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -64,11 +63,9 @@ public class RecordFragment extends Fragment implements RecordAdapter.OnItemClic
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     if (result.getResultCode() == Activity.RESULT_OK) {
-                        Log.d(TAG, "Returned from AddEditRecordActivity with RESULT_OK");
                         loadRecordsFromDb();
                         Toast.makeText(getContext(), "记录已更新", Toast.LENGTH_SHORT).show();
                     } else {
-                        Log.d(TAG, "Returned from AddEditRecordActivity with code: " + result.getResultCode());
                     }
                 });
     }
@@ -82,7 +79,7 @@ public class RecordFragment extends Fragment implements RecordAdapter.OnItemClic
         tvEmptyRecords = view.findViewById(R.id.tv_empty_records);
         fabAddRecord = view.findViewById(R.id.fab_add_record);
         searchViewRecords = view.findViewById(R.id.search_view_records);
-        btnSortRecords = view.findViewById(R.id.btn_sort_records); // 初始化排序按钮
+        btnSortRecords = view.findViewById(R.id.btn_sort_records);
 
         setupRecyclerView();
         setupSearchView();
@@ -92,7 +89,6 @@ public class RecordFragment extends Fragment implements RecordAdapter.OnItemClic
             addEditRecordLauncher.launch(intent);
         });
 
-        // 为排序按钮设置点击监听
         btnSortRecords.setOnClickListener(this::showSortMenu);
 
         return view;
@@ -118,7 +114,6 @@ public class RecordFragment extends Fragment implements RecordAdapter.OnItemClic
                 searchEditText.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
             }
         } catch (Exception e) {
-            Log.e(TAG, "Could not find and configure search_src_text in SearchView", e);
         }
 
         searchViewRecords.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -155,23 +150,21 @@ public class RecordFragment extends Fragment implements RecordAdapter.OnItemClic
         if (searchResults != null) {
             recordList.addAll(searchResults);
         }
-        sortRecordsAndUpdateAdapter(); // 对搜索结果应用当前排序
+        sortRecordsAndUpdateAdapter();
         updateEmptyViewVisibility();
     }
 
     private void loadRecordsFromDb() {
-        Log.d(TAG, "Loading records from DB...");
         birdRecordDao.open();
-        List<BirdRecord> allRecords = birdRecordDao.getAllRecords(); // DAO默认按时间倒序
+        List<BirdRecord> allRecords = birdRecordDao.getAllRecords();
         birdRecordDao.close();
 
         recordList.clear();
         if (allRecords != null) {
             recordList.addAll(allRecords);
         }
-        sortRecordsAndUpdateAdapter(); // 应用当前选择的排序方式
+        sortRecordsAndUpdateAdapter();
         updateEmptyViewVisibility();
-        Log.d(TAG, "Loaded " + recordList.size() + " records into adapter.");
     }
 
     private void updateEmptyViewVisibility() {
@@ -210,7 +203,6 @@ public class RecordFragment extends Fragment implements RecordAdapter.OnItemClic
             } else if (itemId == R.id.sort_has_photo) {
                 currentSortMethod = SortMethod.HAS_PHOTO;
             }
-            // 应用新的排序并刷新列表
             sortRecordsAndUpdateAdapter();
             Toast.makeText(getContext(), "已按 \"" + item.getTitle() + "\" 排序", Toast.LENGTH_SHORT).show();
             return true;
@@ -224,7 +216,6 @@ public class RecordFragment extends Fragment implements RecordAdapter.OnItemClic
      */
     private void sortRecordsAndUpdateAdapter() {
         if (recordList == null || recordList.isEmpty()) {
-            // 如果列表为空，确保adapter也为空
             if (recordAdapter != null) {
                 recordAdapter.setRecords(new ArrayList<>());
             }
@@ -245,24 +236,20 @@ public class RecordFragment extends Fragment implements RecordAdapter.OnItemClic
                 recordList.sort((r1, r2) -> {
                     boolean r1HasPhoto = r1.getPhotoUris() != null && !r1.getPhotoUris().isEmpty();
                     boolean r2HasPhoto = r2.getPhotoUris() != null && !r2.getPhotoUris().isEmpty();
-                    // 将有照片的(true)排在没有照片的(false)前面
                     return Boolean.compare(r2HasPhoto, r1HasPhoto);
                 });
                 break;
             case TIME_DESC:
             default:
-                // 默认按时间倒序
                 recordList.sort((r1, r2) -> Long.compare(r2.getRecordDateTimestamp(), r1.getRecordDateTimestamp()));
                 break;
         }
-        // 使用排序后的列表更新适配器
         recordAdapter.setRecords(recordList);
     }
 
 
     @Override
     public void onItemClick(BirdRecord record) {
-        Log.d(TAG, "Clicked record: " + record.getTitle() + " (ID: " + record.getId() + ")");
         Intent intent = new Intent(getActivity(), AddEditRecordActivity.class);
         intent.putExtra(AddEditRecordActivity.EXTRA_RECORD_ID, record.getId());
         addEditRecordLauncher.launch(intent);
@@ -270,7 +257,6 @@ public class RecordFragment extends Fragment implements RecordAdapter.OnItemClic
 
     @Override
     public void onItemLongClick(BirdRecord record, View anchorView) {
-        Log.d(TAG, "Long-clicked record: " + record.getTitle() + " (ID: " + record.getId() + ")");
         PopupMenu popup = new PopupMenu(requireContext(), anchorView);
         popup.getMenuInflater().inflate(R.menu.menu_record_item_context, popup.getMenu());
         popup.setOnMenuItemClickListener(item -> {
@@ -303,14 +289,11 @@ public class RecordFragment extends Fragment implements RecordAdapter.OnItemClic
         birdRecordDao.close();
 
         if (success) {
-            Log.d(TAG, "Record deleted successfully from DB: ID " + record.getId());
-            // 直接从当前列表移除，避免重新查询数据库
             recordList.removeIf(r -> r.getId() == record.getId());
-            sortRecordsAndUpdateAdapter(); // 重新排序并刷新
+            sortRecordsAndUpdateAdapter();
             updateEmptyViewVisibility();
             Toast.makeText(getContext(), "\"" + record.getTitle() + "\" 已删除", Toast.LENGTH_SHORT).show();
         } else {
-            Log.e(TAG, "Failed to delete record from DB: ID " + record.getId());
             Toast.makeText(getContext(), "删除失败", Toast.LENGTH_SHORT).show();
         }
     }

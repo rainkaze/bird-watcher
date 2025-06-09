@@ -1,4 +1,4 @@
-package com.rainkaze.birdwatcher.service; // 或者 .auth
+package com.rainkaze.birdwatcher.service;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -10,7 +10,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.util.Objects; // 导入 Objects
+import java.util.Objects;
 
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
@@ -24,11 +24,11 @@ public class TokenManager {
     private static final String TAG = "TokenManager";
     private final SharedPreferences sharedPreferences;
     private final OkHttpClient httpClient;
-    private static final Object tokenLock = new Object(); // 用于同步token获取操作
+    private static final Object tokenLock = new Object();
 
     public TokenManager(Context context) {
         this.sharedPreferences = context.getSharedPreferences(BaiduApiConfig.PREF_NAME_BAIDU_AUTH, Context.MODE_PRIVATE);
-        this.httpClient = new OkHttpClient.Builder().build(); // 可以复用全局的Client，或独立配置
+        this.httpClient = new OkHttpClient.Builder().build();
     }
 
     /**
@@ -43,13 +43,10 @@ public class TokenManager {
             String accessToken = sharedPreferences.getString(BaiduApiConfig.KEY_ACCESS_TOKEN, null);
             long expiresAt = sharedPreferences.getLong(BaiduApiConfig.KEY_EXPIRES_AT, 0L);
 
-            // 提前5分钟认为过期，以应对网络延迟等问题
             if (accessToken != null && System.currentTimeMillis() < (expiresAt - 5 * 60 * 1000)) {
-                Log.d(TAG, "Using cached valid access token.");
                 return accessToken;
             }
 
-            Log.d(TAG, "Access token is invalid or expired. Fetching new token.");
             return fetchAndSaveNewToken();
         }
     }
@@ -65,7 +62,6 @@ public class TokenManager {
                     .remove(BaiduApiConfig.KEY_EXPIRES_AT)
                     .remove(BaiduApiConfig.KEY_SCOPE)
                     .apply();
-            Log.d(TAG, "Cleared stored Baidu API token.");
         }
     }
 
@@ -82,45 +78,37 @@ public class TokenManager {
         urlBuilder.addQueryParameter("client_id", BaiduApiConfig.API_KEY);
         urlBuilder.addQueryParameter("client_secret", BaiduApiConfig.SECRET_KEY);
 
-        // 根据百度示例，POST请求但参数在URL中，Body为空JSON对象或空字符串
         RequestBody body = RequestBody.create("", MediaType.parse("application/json; charset=utf-8")); // 空Body
 
         Request request = new Request.Builder()
                 .url(urlBuilder.build())
-                .post(body) // 使用POST方法
-                // 百度示例中Content-Type和Accept是加在header里的
+                .post(body)
                 .addHeader("Content-Type", "application/json")
                 .addHeader("Accept", "application/json")
                 .build();
 
-        Log.d(TAG, "Requesting new token from URL: " + request.url().toString());
-
         try (Response response = httpClient.newCall(request).execute()) {
             ResponseBody responseBody = response.body();
             if (!response.isSuccessful() || responseBody == null) {
-                String errorDetails = responseBody != null ? responseBody.string() : "Response body is null";
-                Log.e(TAG, "Failed to fetch token. Code: " + response.code() + ", Message: " + response.message() + ", Details: " + errorDetails);
+                String errorDetails = responseBody != null ? responseBody.string() : "返回值为空";
                 throw new IOException("获取Token失败: " + response.code() + " - " + response.message());
             }
 
             String jsonResponse = responseBody.string();
-            Log.d(TAG, "Token API Response: " + jsonResponse);
 
             try {
                 JSONObject jsonObject = new JSONObject(jsonResponse);
                 if (jsonObject.has("error")) {
                     String error = jsonObject.getString("error");
                     String errorDescription = jsonObject.optString("error_description", "No description");
-                    Log.e(TAG, "Token API error: " + error + " - " + errorDescription);
                     throw new IOException("Token API error: " + errorDescription);
                 }
 
                 String accessToken = jsonObject.getString("access_token");
-                long expiresIn = jsonObject.getLong("expires_in"); // 单位：秒
+                long expiresIn = jsonObject.getLong("expires_in");
                 String refreshToken = jsonObject.optString("refresh_token", null);
                 String scope = jsonObject.optString("scope", null);
 
-                // 计算精确的过期时间戳 (毫秒)
                 long expiresAtMillis = System.currentTimeMillis() + (expiresIn * 1000L);
 
                 SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -134,11 +122,9 @@ public class TokenManager {
                 }
                 editor.apply();
 
-                Log.i(TAG, "Successfully fetched and saved new access token. Expires at: " + new java.util.Date(expiresAtMillis));
                 return accessToken;
 
             } catch (JSONException e) {
-                Log.e(TAG, "Failed to parse token JSON response.", e);
                 throw new IOException("解析Token响应失败: " + e.getMessage());
             }
         }

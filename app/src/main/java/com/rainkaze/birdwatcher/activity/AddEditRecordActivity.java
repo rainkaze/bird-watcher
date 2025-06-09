@@ -330,7 +330,6 @@ public class AddEditRecordActivity extends AppCompatActivity {
                     newFile);
 
         } catch (IOException e) {
-            Log.e(TAG, "保存照片失败", e);
             Toast.makeText(this, "保存照片失败", Toast.LENGTH_SHORT).show();
             return null;
         }
@@ -392,7 +391,6 @@ public class AddEditRecordActivity extends AppCompatActivity {
             try {
                 photoFile = createImageFileForCamera();
             } catch (IOException ex) {
-                Log.e(TAG, "创建图片文件失败", ex);
                 Toast.makeText(this, "创建图片文件失败", Toast.LENGTH_SHORT).show();
                 return;
             }
@@ -458,7 +456,6 @@ public class AddEditRecordActivity extends AppCompatActivity {
                     } else {
                         runOnUiThread(() -> {
                             Toast.makeText(AddEditRecordActivity.this, "获取位置失败，请检查网络和GPS", Toast.LENGTH_LONG).show();
-                            Log.e(TAG, "获取位置失败，错误码: " + (location != null ? location.getLocType() : "位置不存在"));
                         });
                     }
                     if(mLocationClient != null && mLocationClient.isStarted()){
@@ -468,7 +465,6 @@ public class AddEditRecordActivity extends AppCompatActivity {
             };
             mLocationClient.registerLocationListener(mBaiduLocationListener);
         } catch (Exception e) {
-            Log.e(TAG, "定位服务初始化失败", e);
             Toast.makeText(this, "定位服务初始化失败", Toast.LENGTH_SHORT).show();
         }
     }
@@ -549,7 +545,6 @@ public class AddEditRecordActivity extends AppCompatActivity {
             Toast.makeText(this, "录音开始...", Toast.LENGTH_SHORT).show();
             updateAudioUI();
         } catch (IOException e) {
-            Log.e(TAG, "录音失败", e);
             Toast.makeText(this, "录音失败: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             currentAudioUri = null;
             updateAudioUI();
@@ -611,7 +606,6 @@ public class AddEditRecordActivity extends AppCompatActivity {
             binding.btnPlayAudio.setImageResource(android.R.drawable.ic_media_pause);
             mediaPlayer.setOnCompletionListener(mp -> stopPlayingAudio());
         } catch (IOException e) {
-            Log.e(TAG, "播放失败", e);
             Toast.makeText(this, "播放失败", Toast.LENGTH_SHORT).show();
             isPlayingAudio = false;
         }
@@ -644,9 +638,7 @@ public class AddEditRecordActivity extends AppCompatActivity {
                 File fileToDelete = new File(path);
                 if (fileToDelete.exists()) {
                     if (fileToDelete.delete()) {
-                        Log.d(TAG, "录音文件已删除: " + currentAudioUri);
                     } else {
-                        Log.e(TAG, "录音文件删除失败: " + currentAudioUri);
                     }
                 }
             }

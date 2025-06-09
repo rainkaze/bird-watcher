@@ -186,7 +186,6 @@ public class SoundRecognitionActivity extends AppCompatActivity {
             binding.recyclerViewSoundResults.setVisibility(View.GONE);
             binding.textViewNoSoundResult.setVisibility(View.GONE);
         } catch (IOException e) {
-            Log.e(TAG, "MediaRecorder prepare() failed", e);
             Toast.makeText(this, getString(R.string.error_record_prepare_failed), Toast.LENGTH_SHORT).show();
         }
     }
@@ -226,7 +225,6 @@ public class SoundRecognitionActivity extends AppCompatActivity {
             binding.buttonPlayRecording.setText(getString(R.string.action_stop_playback));
             mediaPlayer.setOnCompletionListener(mp -> stopPlaying());
         } catch (IOException e) {
-            Log.e(TAG, "MediaPlayer prepare() failed", e);
             Toast.makeText(this, getString(R.string.error_playback_prepare_failed), Toast.LENGTH_SHORT).show();
         }
     }

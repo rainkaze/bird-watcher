@@ -12,7 +12,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide; // 确保已导入 Glide
+import com.bumptech.glide.Glide;
 import com.rainkaze.birdwatcher.R;
 import com.rainkaze.birdwatcher.model.BirdRecord;
 
@@ -30,7 +30,7 @@ public class RecordAdapter extends RecyclerView.Adapter<RecordAdapter.RecordView
 
     public interface OnItemClickListener {
         void onItemClick(BirdRecord record);
-        void onItemLongClick(BirdRecord record, View anchorView); // anchorView 用于 PopupMenu
+        void onItemLongClick(BirdRecord record, View anchorView);
     }
 
     public RecordAdapter(Context context, List<BirdRecord> initialRecords, OnItemClickListener listener) {
@@ -44,13 +44,12 @@ public class RecordAdapter extends RecyclerView.Adapter<RecordAdapter.RecordView
         if (newRecords != null) {
             this.records.addAll(newRecords);
         }
-        notifyDataSetChanged(); // 在实际应用中，考虑使用 DiffUtil 提高效率
+        notifyDataSetChanged();
     }
 
     public void addRecord(BirdRecord record) {
-        this.records.add(0, record); // 添加到列表顶部
+        this.records.add(0, record);
         notifyItemInserted(0);
-        // 如果是空列表变为非空，可能需要额外通知
     }
 
     public void updateRecord(BirdRecord updatedRecord) {
@@ -68,7 +67,6 @@ public class RecordAdapter extends RecyclerView.Adapter<RecordAdapter.RecordView
             if (records.get(i).getId() == recordId) {
                 records.remove(i);
                 notifyItemRemoved(i);
-                // 如果列表因此变空，可能需要额外通知
                 return;
             }
         }
@@ -120,25 +118,22 @@ public class RecordAdapter extends RecyclerView.Adapter<RecordAdapter.RecordView
             String locationStr = !TextUtils.isEmpty(record.getDetailedLocation())
                     ? record.getDetailedLocation() : "未知地点";
 
-            // 简单截断地点字符串，避免过长
             if (locationStr.length() > 20) {
                 locationStr = locationStr.substring(0, 17) + "...";
             }
             tvDateLocation.setText(String.format("%s | %s", dateStr, locationStr));
 
-            // 设置缩略图
             if (record.getPhotoUris() != null && !record.getPhotoUris().isEmpty() &&
                     !TextUtils.isEmpty(record.getPhotoUris().get(0))) {
                 Glide.with(context)
                         .load(Uri.parse(record.getPhotoUris().get(0)))
-                        .placeholder(R.mipmap.ic_launcher_round) // 默认或占位图
-                        .error(R.drawable.ic_picture_error) // 加载错误时显示的图片 (你需要添加这个资源)
+                        .placeholder(R.mipmap.ic_launcher_round)
+                        .error(R.drawable.ic_picture_error)
                         .centerCrop()
                         .into(ivThumbnail);
             } else {
-                // 可以设置一个默认的鸟类图标或者应用图标
                 Glide.with(context)
-                        .load(R.drawable.ic_picture_error) // 你需要添加这个资源
+                        .load(R.drawable.ic_picture_error)
                         .centerCrop()
                         .into(ivThumbnail);
             }
@@ -146,7 +141,7 @@ public class RecordAdapter extends RecyclerView.Adapter<RecordAdapter.RecordView
 
             itemView.setOnClickListener(v -> listener.onItemClick(record));
             itemView.setOnLongClickListener(v -> {
-                listener.onItemLongClick(record, itemView); // 传递 itemView 作为 PopupMenu 的锚点
+                listener.onItemLongClick(record, itemView);
                 return true;
             });
         }

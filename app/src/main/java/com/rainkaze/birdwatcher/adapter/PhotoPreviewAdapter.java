@@ -6,20 +6,20 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.ImageButton; // For remove button
+import android.widget.ImageButton;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.rainkaze.birdwatcher.R; // Make sure you have item_photo_preview.xml
+import com.rainkaze.birdwatcher.R;
 
 import java.util.List;
 
 public class PhotoPreviewAdapter extends RecyclerView.Adapter<PhotoPreviewAdapter.PhotoViewHolder> {
 
     private Context context;
-    private List<String> photoUris; // List of URI strings
+    private List<String> photoUris;
     private OnPhotoRemoveListener removeListener;
 
     public interface OnPhotoRemoveListener {
@@ -36,7 +36,6 @@ public class PhotoPreviewAdapter extends RecyclerView.Adapter<PhotoPreviewAdapte
     @Override
     public PhotoViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(context).inflate(R.layout.item_photo_preview_with_remove, parent, false);
-        // 使用新的布局 item_photo_preview_with_remove.xml
         return new PhotoViewHolder(view);
     }
 
@@ -46,7 +45,7 @@ public class PhotoPreviewAdapter extends RecyclerView.Adapter<PhotoPreviewAdapte
         Glide.with(context)
                 .load(Uri.parse(uriString))
                 .centerCrop()
-                .placeholder(R.mipmap.ic_launcher_round) // Or a more specific placeholder
+                .placeholder(R.mipmap.ic_launcher_round)
                 .into(holder.imageView);
 
         holder.removeButton.setOnClickListener(v -> {

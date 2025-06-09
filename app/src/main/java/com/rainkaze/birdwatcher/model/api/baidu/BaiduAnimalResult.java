@@ -10,7 +10,7 @@ public class BaiduAnimalResult {
     private String name;
 
     @SerializedName("score")
-    private String score; // API 返回的是字符串类型的 score
+    private String score;
 
     @SerializedName("baike_info")
     private BaiduBaikeInfo baikeInfo;

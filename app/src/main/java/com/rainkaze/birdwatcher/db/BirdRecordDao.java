@@ -101,7 +101,7 @@ public class BirdRecordDao {
      */
     public long addRecord(BirdRecord record, long userId) {
         if (database == null || !database.isOpen()) {
-            open(); // 确保数据库已打开
+            open();
         }
         ContentValues values = new ContentValues();
         values.put(BirdRecordDbHelper.COLUMN_TITLE, record.getTitle());
@@ -132,7 +132,6 @@ public class BirdRecordDao {
 
         long insertId = database.insert(BirdRecordDbHelper.TABLE_RECORDS, null, values);
 
-        // 关键：将新生成的 _id 作为 clientId
         if (insertId != -1) {
             ContentValues updateClientId = new ContentValues();
             updateClientId.put(BirdRecordDbHelper.COLUMN_CLIENT_ID, insertId);
@@ -156,15 +155,13 @@ public class BirdRecordDao {
 
         ContentValues values = recordToContentValues(serverRecord);
         values.put(BirdRecordDbHelper.COLUMN_USER_ID, currentUserId);
-        values.put(BirdRecordDbHelper.COLUMN_SYNC_STATUS, 1); // 从服务器来，状态总是“已同步”
+        values.put(BirdRecordDbHelper.COLUMN_SYNC_STATUS, 1);
 
         if (localRecord == null) {
             // 本地不存在，直接插入
             database.insert(BirdRecordDbHelper.TABLE_RECORDS, null, values);
         } else {
             // 本地已存在，进行更新。
-            // 在此采用“服务器数据为准”的策略，直接覆盖本地记录。
-            // 更复杂的策略可能需要比较时间戳，但当前后端API未提供。
             database.update(BirdRecordDbHelper.TABLE_RECORDS, values,
                     BirdRecordDbHelper.COLUMN_CLIENT_ID + " = ?",
                     new String[]{String.valueOf(serverRecord.getClientId())});
@@ -181,8 +178,8 @@ public class BirdRecordDao {
         if (database == null || !database.isOpen()) open();
 
         ContentValues values = recordToContentValues(record);
-        if (record.getSyncStatus() == 1) { // 如果是已同步的记录被修改
-            values.put(BirdRecordDbHelper.COLUMN_SYNC_STATUS, 2); // 2: 待更新
+        if (record.getSyncStatus() == 1) {
+            values.put(BirdRecordDbHelper.COLUMN_SYNC_STATUS, 2);
         }
 
         return database.update(BirdRecordDbHelper.TABLE_RECORDS, values,
@@ -297,7 +294,7 @@ public class BirdRecordDao {
         }
         List<BirdRecord> records = new ArrayList<>();
         if (TextUtils.isEmpty(query)) {
-            return getAllRecords(); // 如果查询为空，返回所有记录
+            return getAllRecords();
         }
 
         String selection = BirdRecordDbHelper.COLUMN_TITLE + " LIKE ? OR " +
@@ -308,7 +305,7 @@ public class BirdRecordDao {
         String[] selectionArgs = new String[]{"%" + query + "%", "%" + query + "%", "%" + query + "%", "%" + query + "%", "%" + query + "%"};
 
         Cursor cursor = database.query(BirdRecordDbHelper.TABLE_RECORDS,
-                null, // all columns
+                null,
                 selection,
                 selectionArgs,
                 null, null,
@@ -392,7 +389,6 @@ public class BirdRecordDao {
             }
             cursor.close();
         }
-        Log.d(TAG, "Fetched " + stats.size() + " bird stats.");
         return stats;
     }
 
@@ -462,7 +458,6 @@ public class BirdRecordDao {
                 BirdRecordDbHelper.COLUMN_USER_ID + " = ?",
                 new String[]{"0"});
 
-        Log.d(TAG, "Claimed " + rowsAffected + " guest records for new user ID: " + newUserId);
         return rowsAffected;
     }
 

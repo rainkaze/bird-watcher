@@ -4,6 +4,9 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import com.google.gson.annotations.SerializedName;
 
+import lombok.Data;
+
+@Data
 public class Bird implements Parcelable {
 
     @SerializedName("编号")
@@ -18,7 +21,6 @@ public class Bird implements Parcelable {
     @SerializedName("所属目")
     private String order;
 
-    // 新增字段
     @SerializedName("所属科")
     private String family;
 
@@ -39,7 +41,7 @@ public class Bird implements Parcelable {
         scientificName = in.readString();
         chineseName = in.readString();
         order = in.readString();
-        family = in.readString(); // 从Parcel中读取新增字段
+        family = in.readString();
         detailsUrl = in.readString();
         iucnRedList = in.readString();
         nationalProtectionLevel = in.readString();
@@ -52,7 +54,7 @@ public class Bird implements Parcelable {
         dest.writeString(scientificName);
         dest.writeString(chineseName);
         dest.writeString(order);
-        dest.writeString(family); // 将新增字段写入Parcel
+        dest.writeString(family);
         dest.writeString(detailsUrl);
         dest.writeString(iucnRedList);
         dest.writeString(nationalProtectionLevel);
@@ -76,13 +78,5 @@ public class Bird implements Parcelable {
         }
     };
 
-    public String getId() { return id; }
-    public String getScientificName() { return scientificName; }
-    public String getChineseName() { return chineseName; }
-    public String getOrder() { return order; }
-    public String getFamily() { return family; } // 新增Getter方法
-    public String getDetailsUrl() { return detailsUrl; }
-    public String getIucnRedList() { return iucnRedList; }
-    public String getNationalProtectionLevel() { return nationalProtectionLevel; }
-    public String getBirdDetails() { return birdDetails; }
+
 }

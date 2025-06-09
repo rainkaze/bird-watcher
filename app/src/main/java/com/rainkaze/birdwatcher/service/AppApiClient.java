@@ -14,7 +14,6 @@ import okhttp3.Response;
 public class AppApiClient {
 
     private static final String TAG = "AppApiClient";
-    // !!! 将此URL替换为您的服务器地址 !!!
     private static final String BASE_URL = "http://47.94.105.113/api/";
 
     private final OkHttpClient httpClient;
@@ -71,8 +70,6 @@ public class AppApiClient {
     private String executeRequest(Request request) throws IOException {
         try (Response response = httpClient.newCall(request).execute()) {
             if (!response.isSuccessful()) {
-                Log.e(TAG, "Request failed: " + response.code() + " " + response.message());
-                // 返回完整的响应体，让调用者解析错误信息
                 return response.body() != null ? response.body().string() : "{\"status\":\"error\", \"message\":\"Unknown network error\"}";
             }
             return response.body() != null ? response.body().string() : "";

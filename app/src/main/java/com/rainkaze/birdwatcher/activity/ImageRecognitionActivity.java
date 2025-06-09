@@ -46,7 +46,6 @@ public class ImageRecognitionActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setTitle(getString(R.string.title_image_recognition));
         } else {
-            Log.e(TAG, "Support Action Bar is null, Toolbar might not be set correctly.");
         }
 
         identificationService = new BirdIdentificationService(this);
@@ -56,7 +55,6 @@ public class ImageRecognitionActivity extends AppCompatActivity {
             binding.imageViewPreview.setImageURI(imageUri);
         } else {
             Toast.makeText(this, getString(R.string.error_image_not_found), Toast.LENGTH_LONG).show();
-            Log.e(TAG, "Image URI is null in intent data.");
             finish();
             return;
         }

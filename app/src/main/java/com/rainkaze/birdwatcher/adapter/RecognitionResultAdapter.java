@@ -21,7 +21,6 @@ public class RecognitionResultAdapter extends RecyclerView.Adapter<RecognitionRe
     private List<RecognitionResult> results;
     private Context context;
 
-    // 修改点 1: 新增长按监听器接口和成员变量
     private OnItemLongClickListener longClickListener;
 
     public interface OnItemLongClickListener {
@@ -33,7 +32,6 @@ public class RecognitionResultAdapter extends RecyclerView.Adapter<RecognitionRe
         this.results = results;
     }
 
-    // 修改点 2: 添加一个公共方法来设置监听器
     public void setOnItemLongClickListener(OnItemLongClickListener listener) {
         this.longClickListener = listener;
     }
@@ -76,11 +74,10 @@ public class RecognitionResultAdapter extends RecyclerView.Adapter<RecognitionRe
             holder.baikeLinkTextView.setVisibility(View.GONE);
         }
 
-        // 修改点 3: 为列表项设置长按监听
         holder.itemView.setOnLongClickListener(v -> {
             if (longClickListener != null) {
                 longClickListener.onItemLongClick(result);
-                return true; // 返回 true 表示事件已被消费
+                return true;
             }
             return false;
         });

@@ -35,9 +35,9 @@ import com.rainkaze.birdwatcher.adapter.RecordAdapter;
 import com.rainkaze.birdwatcher.db.BirdRecordDao;
 import com.rainkaze.birdwatcher.model.BirdRecord;
 import com.rainkaze.birdwatcher.model.BirdStat;
-import com.rainkaze.birdwatcher.service.AppApiClient; // 可以保留用于登录/注册
+import com.rainkaze.birdwatcher.service.AppApiClient;
 import com.rainkaze.birdwatcher.service.SessionManager;
-import com.rainkaze.birdwatcher.service.SyncManager; // 导入新的SyncManager
+import com.rainkaze.birdwatcher.service.SyncManager;
 
 import org.json.JSONObject;
 
@@ -53,11 +53,10 @@ public class HomeFragment extends Fragment {
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final Handler handler = new Handler(Looper.getMainLooper());
 
-    // --- 修改: 移除与同步相关的复杂状态 ---
     private BirdRecordDao birdRecordDao;
     private SessionManager sessionManager;
-    private SyncManager syncManager; // 新增
-    private AppApiClient appApiClient; // 保留用于登录/注册
+    private SyncManager syncManager;
+    private AppApiClient appApiClient;
 
     private TextView tvTotalRecordsCount, tvUniqueSpeciesCount, tvRecentRecordsTitle, tvHomeNoRecords;
     private Button btnHomeAddRecord, btnHomeIdentifyBird;
@@ -73,7 +72,6 @@ public class HomeFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // --- 修改: 初始化所有需要的服务 ---
         birdRecordDao = new BirdRecordDao(requireContext());
         sessionManager = new SessionManager(requireContext());
         syncManager = new SyncManager(requireContext());
@@ -83,7 +81,7 @@ public class HomeFragment extends Fragment {
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     if (result.getResultCode() == Activity.RESULT_OK) {
-                        loadData(); // 记录增删改后，重新加载本地数据
+                        loadData();
                     }
                 }
         );
@@ -105,11 +103,10 @@ public class HomeFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        loadData(); // 每次返回页面都刷新数据
+        loadData();
     }
 
     private void initializeViews(View view) {
-        // ... (这部分代码保持不变)
         tvTotalRecordsCount = view.findViewById(R.id.tv_total_records_count);
         tvUniqueSpeciesCount = view.findViewById(R.id.tv_unique_species_count);
         tvRecentRecordsTitle = view.findViewById(R.id.tv_recent_records_title);
@@ -125,12 +122,10 @@ public class HomeFragment extends Fragment {
         tvSyncStatus = view.findViewById(R.id.tv_sync_status);
     }
 
-    // --- 新增: 专门加载数据并更新UI的方法 ---
     private void loadData() {
-        updateUserUI(); // 总是先更新用户面板
+        updateUserUI();
         executor.execute(() -> {
             birdRecordDao.open();
-            // 根据登录状态决定加载哪些记录
             List<BirdRecord> recordsToShow;
             if (sessionManager.isLoggedIn()) {
                 // 如果已登录，只显示当前用户的记录
@@ -151,7 +146,7 @@ public class HomeFragment extends Fragment {
         if (sessionManager.isLoggedIn()) {
             layoutUserInfo.setVisibility(View.VISIBLE);
             tvUsername.setText(sessionManager.getUsername());
-            checkUnsyncedRecords(); // 检查待同步状态
+            checkUnsyncedRecords();
         } else {
             layoutUserInfo.setVisibility(View.VISIBLE);
             tvUsername.setText("游客模式");
@@ -177,7 +172,6 @@ public class HomeFragment extends Fragment {
     }
 
     private void setupRecyclerViews() {
-        // ... (这部分代码保持不变)
         rvRecentRecords.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
         recentRecordAdapter = new RecordAdapter(getContext(), null, new RecordAdapter.OnItemClickListener() {
             @Override
@@ -196,7 +190,6 @@ public class HomeFragment extends Fragment {
     }
 
     private void setupClickListeners() {
-        // ... (这部分代码保持不变)
         ivUserAvatar.setOnClickListener(v -> {
             if (sessionManager.isLoggedIn()) {
                 showUserActionsDialog();
@@ -225,17 +218,16 @@ public class HomeFragment extends Fragment {
                 .setItems(options, (dialog, item) -> {
                     String option = options[item].toString();
                     if ("同步数据".equals(option)) {
-                        performSync(); // 调用新的同步方法
+                        performSync();
                     } else if ("退出登录".equals(option)) {
                         sessionManager.logoutUser();
-                        loadData(); // 重新加载数据
+                        loadData();
                         Toast.makeText(getContext(), "已退出登录", Toast.LENGTH_SHORT).show();
                     }
                 })
                 .show();
     }
 
-    // --- 修改: 调用 SyncManager ---
     private void performSync() {
         tvSyncStatus.setText("同步中...");
         Toast.makeText(getContext(), "开始同步...", Toast.LENGTH_SHORT).show();
@@ -243,19 +235,17 @@ public class HomeFragment extends Fragment {
             @Override
             public void onSyncSuccess() {
                 Toast.makeText(getContext(), "同步完成", Toast.LENGTH_SHORT).show();
-                loadData(); // 同步成功后刷新整个界面
+                loadData();
             }
 
             @Override
             public void onSyncFailure(String message) {
                 Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
-                checkUnsyncedRecords(); // 同步失败后，重新检查待同步状态
+                checkUnsyncedRecords();
             }
         });
     }
 
-    // --- 登录/注册 和 UI更新部分的大部分代码都可以保持不变 ---
-    // ... (showLoginRegisterDialog, performLogin, performRegister, validateInput 保持不变)
     private void showLoginRegisterDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
         LayoutInflater inflater = requireActivity().getLayoutInflater();
@@ -306,23 +296,22 @@ public class HomeFragment extends Fragment {
                     birdRecordDao.open();
                     int claimedCount = birdRecordDao.claimGuestRecords(userId);
                     birdRecordDao.close();
-                    Log.d(TAG, "Claimed " + claimedCount + " records for user " + userId);
 
                     sessionManager.createLoginSession(userId, remoteUsername, token);
 
                     handler.post(() -> {
                         Toast.makeText(getContext(), "登录成功", Toast.LENGTH_SHORT).show();
-                        performSync(); // 登录成功后自动同步一次
+                        // 登录成功后自动同步一次
+                        performSync();
                     });
                 } else {
                     handler.post(() -> {
                         try {
                             Toast.makeText(getContext(), "登录失败: " + json.getString("message"), Toast.LENGTH_LONG).show();
-                        } catch(Exception e) { /* ignore */ }
+                        } catch(Exception e) {  }
                     });
                 }
             } catch (Exception e) {
-                Log.e(TAG, "Login failed", e);
                 handler.post(() -> Toast.makeText(getContext(), "登录请求失败: " + e.getMessage(), Toast.LENGTH_LONG).show());
             }
         });
