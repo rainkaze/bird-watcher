@@ -7,7 +7,6 @@ function sync_log($message) {
     file_put_contents($log_file, $formatted_message, FILE_APPEND);
 }
 
-// Token验证逻辑 (不变)
 $headers = getallheaders();
 $token = $headers['Authorization'] ?? null;
 if (!$token) { json_response(['status' => 'error', 'message' => '未提供认证Token'], 401); }
@@ -21,8 +20,6 @@ $stmt->fetch();
 $stmt->close();
 
 $data = json_decode(file_get_contents('php://input'), true);
-sync_log("--- NEW SYNC REQUEST (Final Version) ---");
-sync_log($data);
 
 if (json_last_error() !== JSON_ERROR_NONE) { json_response(['status' => 'error', 'message' => '无效的JSON请求体'], 400); }
 $records = $data['records'] ?? [];
@@ -38,9 +35,7 @@ $synced_client_ids = [];
 try {
     foreach ($records as $record) {
         $clientId = $record['id'];
-        sync_log("Processing record with clientId: " . $clientId);
 
-        // 图片处理逻辑 (不变)
         $final_photo_urls = [];
         if (isset($record['photoUris']) && is_array($record['photoUris'])) {
             foreach($record['photoUris'] as $photo_data) {
@@ -60,7 +55,6 @@ try {
         }
         $photo_uris_json = json_encode($final_photo_urls);
 
-        // 准备所有字段的变量
         $title = $record['title'];
         $content = $record['content'] ?? null;
         $birdName = $record['birdName'];
@@ -71,7 +65,6 @@ try {
         $audioUri = $record['audioUri'] ?? null;
         $recordDateTimestamp = $record['recordDateTimestamp'];
 
-        // --- 核心修改：先查询记录是否存在 ---
         $check_stmt = $conn->prepare("SELECT id FROM records WHERE user_id = ? AND client_id = ?");
         $check_stmt->bind_param("ii", $user_id, $clientId);
         $check_stmt->execute();
@@ -80,8 +73,6 @@ try {
         $check_stmt->close();
 
         if ($record_exists) {
-            // --- 如果存在，执行 UPDATE ---
-            sync_log("Record exists. Performing UPDATE for clientId: " . $clientId);
             $update_stmt = $conn->prepare(
                 "UPDATE records SET title=?, content=?, bird_name=?, scientific_name=?, latitude=?, longitude=?, " .
                 "detailed_location=?, photo_uris=?, audio_uri=?, record_date_timestamp=? " .
@@ -95,8 +86,6 @@ try {
             $update_stmt->execute();
             $update_stmt->close();
         } else {
-            // --- 如果不存在，执行 INSERT ---
-            sync_log("Record does not exist. Performing INSERT for clientId: " . $clientId);
             $insert_stmt = $conn->prepare(
                 "INSERT INTO records (user_id, client_id, title, content, bird_name, scientific_name, latitude, longitude, " .
                 "detailed_location, photo_uris, audio_uri, record_date_timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
@@ -113,12 +102,10 @@ try {
     }
 
     $conn->commit();
-    sync_log("--- SYNC SUCCESS (Final Version) ---");
     json_response(['status' => 'success', 'message' => '同步成功', 'synced_client_ids' => $synced_client_ids]);
 
 } catch (Exception $e) {
     $conn->rollback();
-    sync_log("--- SYNC FAILED (Final Version): " . $e->getMessage() . " ---");
     json_response(['status' => 'error', 'message' => '数据库事务失败: ' . $e->getMessage()], 500);
 }
 

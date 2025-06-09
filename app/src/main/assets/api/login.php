@@ -19,7 +19,6 @@ $stmt->bind_result($user_id, $hashed_password);
 if ($stmt->num_rows > 0) {
     $stmt->fetch();
     if (password_verify($password, $hashed_password)) {
-        // 登录成功, 生成token
         $token = bin2hex(random_bytes(32));
         $token_expires_at = date('Y-m-d H:i:s', strtotime('+7 days'));
 
