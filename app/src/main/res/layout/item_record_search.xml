@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="12dp"
+    android:padding="@dimen/item_search_padding"
     android:background="?android:attr/selectableItemBackground"
     android:clickable="true"
     android:focusable="true">
@@ -14,19 +14,19 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAppearance="?attr/textAppearanceListItem"
-        android:textSize="16sp"
+        android:textSize="@dimen/item_search_text_size_primary"
         android:maxLines="1"
         android:ellipsize="end"
-        tools:text="记录标题：发现一只漂亮的翠鸟" />
+        tools:text="@string/tools_search_item_title" />
 
     <TextView
         android:id="@+id/tv_search_item_subtitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAppearance="?attr/textAppearanceListItemSecondary"
-        android:textSize="14sp"
-        android:layout_marginTop="4dp"
+        android:textSize="@dimen/item_search_text_size_secondary"
+        android:layout_marginTop="@dimen/item_search_text_spacing"
         android:maxLines="1"
         android:ellipsize="end"
-        tools:text="翠鸟 | 2024-05-20" />
+        tools:text="@string/tools_search_item_subtitle" />
 </LinearLayout>

@@ -9,15 +9,16 @@
     >
 
     <androidx.appcompat.widget.Toolbar
-    android:id="@+id/toolbar"
-    android:layout_width="0dp" android:layout_height="?attr/actionBarSize"
-    android:background="?attr/colorPrimary"
-    android:elevation="4dp"
-    android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-    app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-    app:layout_constraintTop_toTopOf="parent"
-    app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintEnd_toEndOf="parent"/>
+        android:id="@+id/toolbar"
+        android:layout_width="0dp"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        android:elevation="@dimen/toolbar_elevation_4dp"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_record_sound"
@@ -27,19 +28,19 @@
         app:layout_constraintTop_toBottomOf="@id/toolbar"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="32dp"
-        android:contentDescription="开始/停止录音"/>
+        android:layout_marginTop="@dimen/margin_32dp"
+        android:contentDescription="@string/cd_toggle_recording"/>
 
     <TextView
         android:id="@+id/text_recording_status"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="点击按钮开始录音"
-        android:textSize="16sp"
+        android:text="@string/status_ready_to_record"
+        android:textSize="@dimen/font_size_standard"
         app:layout_constraintTop_toBottomOf="@id/fab_record_sound"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp"/>
+        android:layout_marginTop="@dimen/spacing_default_16dp"/>
 
     <ProgressBar
         android:id="@+id/progress_bar_sound"
@@ -51,50 +52,50 @@
         app:layout_constraintTop_toBottomOf="@id/text_recording_status"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="@dimen/spacing_default_16dp"
         tools:visibility="visible"
-        android:paddingLeft="16dp"
-        android:paddingRight="16dp"
+        android:paddingLeft="@dimen/spacing_default_16dp"
+        android:paddingRight="@dimen/spacing_default_16dp"
         />
 
     <Button
         android:id="@+id/button_play_recording"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="播放录音"
+        android:text="@string/action_play_recording"
         android:visibility="gone"
         tools:visibility="visible"
         app:layout_constraintTop_toBottomOf="@id/progress_bar_sound"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@id/button_start_sound_recognition"
         app:layout_constraintHorizontal_chainStyle="packed"
-        android:layout_marginTop="24dp"/>
+        android:layout_marginTop="@dimen/margin_large_24dp"/>
 
     <Button
         android:id="@+id/button_start_sound_recognition"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="开始识别"
+        android:text="@string/action_start_sound_recognition"
         android:visibility="gone"
         tools:visibility="visible"
         app:layout_constraintTop_toTopOf="@id/button_play_recording"
         app:layout_constraintStart_toEndOf="@id/button_play_recording"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginStart="16dp"/>
+        android:layout_marginStart="@dimen/spacing_default_16dp"/>
 
     <TextView
         android:id="@+id/text_view_sound_result_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="识别结果："
-        android:textSize="18sp"
+        android:text="@string/title_sound_results"
+        android:textSize="@dimen/font_size_large_18sp"
         android:textStyle="bold"
         app:layout_constraintTop_toBottomOf="@id/button_start_sound_recognition"
         app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="@dimen/margin_large_24dp"
         android:visibility="gone"
         tools:visibility="visible"
-        android:paddingLeft="20dp"/>
+        android:paddingLeft="@dimen/padding_large_20dp"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view_sound_results"
@@ -104,22 +105,22 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="@dimen/margin_small_8dp"
         tools:listitem="@layout/item_recognition_result"
         android:visibility="gone"
         tools:visibility="visible"
-        android:padding="16dp"/>
+        android:padding="@dimen/spacing_default_16dp"/>
 
     <TextView
         android:id="@+id/text_view_no_sound_result"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="未能识别或无结果"
-        android:textSize="16sp"
+        android:text="@string/message_no_sound_result"
+        android:textSize="@dimen/font_size_standard"
         app:layout_constraintTop_toBottomOf="@id/text_view_sound_result_title"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="@dimen/spacing_default_16dp"
         android:visibility="gone"
         tools:visibility="visible"/>
 

@@ -10,9 +10,9 @@
         android:id="@+id/search_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:queryHint="通过中文名或学名搜索鸟类..."
+        android:queryHint="@string/knowledge_search_hint"
         android:iconifiedByDefault="false"
-        android:layout_margin="8dp"/>
+        android:layout_margin="@dimen/knowledge_search_margin"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view"

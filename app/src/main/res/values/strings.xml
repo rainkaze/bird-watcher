@@ -28,7 +28,6 @@
     <string name="error_recognition_failed">识别出错: %1$s</string>
     <string name="dialog_title_save_record">保存记录</string>
     <string name="dialog_message_save_record">要将 \"%1$s\" 的识别结果保存到记鸟笔记吗？</string>
-    <string name="action_save">保存</string>
     <string name="action_cancel">取消</string>
 
     <string name="title_sound_recognition">听音识鸟</string>
@@ -38,6 +37,166 @@
     <string name="error_playback_prepare_failed">播放准备失败</string>
     <string name="status_recording">录音中...</string>
     <string name="status_record_complete">录音完成</string>
-    <string name="action_play_recording">播放录音</string>
     <string name="action_stop_playback">停止播放</string>
+
+
+    <!--activity_add_edit_record.xml-->
+    <string name="hint_title_required">标题*</string>
+    <string name="hint_bird_name_required">鸟名*</string>
+    <string name="hint_scientific_name_optional">学名 (可选)</string>
+    <string name="hint_content_details_optional">详细内容/观察描述 (可选)</string>
+    <string name="hint_latitude">纬度 (-90 ~ 90)</string>
+    <string name="hint_longitude">经度 (-180 ~ 180)</string>
+    <string name="hint_detailed_location_optional">详细地点描述 (可选)</string>
+    <string name="title_location_info_optional">地点信息 (可选)</string>
+    <string name="title_photos_optional">照片 (可选)</string>
+    <string name="title_audio_record_optional">音频记录 (可选)</string>
+    <string name="button_get_current_location">获取当前位置</string>
+    <string name="button_add_photos">选择照片</string>
+    <string name="button_start_recording">开始录音</string>
+    <string name="cd_play_audio">播放音频</string>
+    <string name="cd_delete_audio">删除音频</string>
+    <string name="tools_text_record_date">记录日期: 2024-05-20 10:30</string>
+    <string name="tools_text_audio_filename">my_bird_song_recording_final_version.mp3</string>
+
+    <!--activity_bird_detail.xml-->
+    <string name="header_bird_description">鸟类详情</string>
+
+    <!--activity_image_recognition.xml-->
+    <string name="cd_image_for_recognition">待识别图片</string>
+    <string name="action_recognize">开始识别</string>
+    <string name="label_recognition_results">识别结果：</string>
+    <string name="message_recognition_failed">未能识别或无结果</string>
+
+
+    <!--activity_sound_recognition.xml-->
+    <string name="cd_toggle_recording">开始/停止录音</string>
+    <string name="status_ready_to_record">点击按钮开始录音</string>
+    <string name="message_no_sound_result">未能识别或无结果</string>
+    <string name="action_play_recording">播放录音</string>
+    <string name="action_start_sound_recognition">开始识别</string>
+    <string name="title_sound_results">识别结果：</string>
+
+
+    <!--activity_login.xml-->
+    <string name="hint_username_dialog">用户名</string>
+    <string name="hint_password_dialog">密码</string>
+
+
+    <!--fragment_home.xml-->
+    <string name="cd_user_avatar">用户头像</string>
+    <string name="label_total_records">总记录数</string>
+    <string name="label_unique_species">鸟类物种</string>
+    <string name="title_recent_records">近期记录</string>
+    <string name="title_my_bird_rankings">我的观鸟排行</string>
+    <string name="action_add_record">添加记录</string>
+    <string name="action_identify_bird">识鸟</string>
+    <string name="prompt_no_records_home">还没有任何记录，快去添加你的第一次发现吧！</string>
+    <string name="tools_username_sample">观鸟者</string>
+    <string name="tools_sync_status_sample">上次同步：5分钟前</string>
+    <string name="tools_sample_count_128">128</string>
+    <string name="tools_sample_count_42">42</string>
+
+
+    <!--fragment_identify.xml-->
+    <string name="identify_by_camera">拍照识鸟</string>
+    <string name="identify_by_album">相册识鸟</string>
+    <string name="identify_by_sound">听音识鸟</string>
+
+
+    <!--fragment_knowledge.xml-->
+    <string name="knowledge_search_hint">通过中文名或学名搜索鸟类...</string>
+
+
+    <!--fragment_map.xml-->
+    <string name="map_cd_toggle_search_mode">切换搜索模式</string>
+    <string name="map_cd_toggle_records_visibility">切换记录可见性</string>
+
+
+    <!--fragment_record.xml-->
+    <string name="record_search_view_hint">搜索鸟类名称或地点...</string>
+    <string name="record_cd_sort">排序</string>
+    <string name="record_empty_view_text">还没有任何观鸟记录\n点击右下角按钮添加吧！</string>
+    <string name="record_cd_add_fab">添加新的观鸟记录</string>
+
+
+    <!--info_window_record.xml-->
+    <string name="tools_infowindow_title_sample">一次精彩的白鹭观察活动</string>
+    <string name="tools_infowindow_bird_name_sample">鸟类: 白鹭 (Ardea alba)</string>
+    <string name="tools_infowindow_content_sample">在湿地公园的北侧，芦苇荡中发现。姿态优美，正在觅食。周围环境安静，光线良好，适合拍照。</string>
+    <string name="tools_infowindow_meta_sample">2024-05-21 | 某某湿地公园北侧</string>
+
+
+    <!--item_bird_search.xml-->
+    <string name="tools_bird_stat_name">红腹锦鸡</string>
+    <string name="tools_bird_stat_popularity">人气值: 95%</string>
+
+
+
+    <!--item_bird_stat.xml-->
+    <string name="tools_stat_rank_sample">1.</string>
+    <string name="tools_stat_name_sample">白头翁</string>
+    <string name="tools_stat_count_sample">15 次</string>
+
+
+    <!--item_photo_preview.xml-->
+    <string name="cd_photo_preview">照片预览</string>
+
+
+    <!--item_photo_preview_with_remove.xml-->
+    <string name="cd_photo_preview_item">照片预览项</string>
+    <string name="cd_remove_photo">删除照片</string>
+
+
+    <!--item_poi_result.xml-->
+    <string name="tools_poi_name_sample">天安门</string>
+    <string name="tools_poi_address_sample">北京市东城区</string>
+
+
+    <!--item_recognition_result.xml-->
+    <string name="tools_recognition_name_sample">叉角羚</string>
+    <string name="tools_recognition_confidence_sample">置信度: 0.99</string>
+    <string name="tools_recognition_description_sample">叉角羚(学名：Antilocapra americana)：在角的中部角鞘有向前伸的分枝，故名。体型中等，体长1-1.5米...</string>
+
+
+
+    <!--item_record.xml-->
+    <string name="cd_record_thumbnail">记录缩略图</string>
+    <string name="tools_record_item_title">一次精彩的白鹭观察活动总结报告</string>
+    <string name="tools_record_item_bird_name">鸟名：白鹭 (Ardea alba)</string>
+    <string name="tools_record_item_meta">2025-06-05 | 某湿地公园北区入口</string>
+
+
+    <!--item_record_search.xml-->
+    <string name="tools_search_item_title">记录标题：发现一只可爱的企鹅</string>
+    <string name="tools_search_item_subtitle">翠鸟 | 2024-05-20</string>
+
+
+    <!--view_custom_marker.xml-->
+    <string name="tools_custom_marker_title">一只可爱的企鹅</string>
+
+
+    <!--bottom_navigation_menu.xml-->
+    <string name="menu_title_home">首页</string>
+    <string name="menu_title_map">地图</string>
+    <string name="menu_title_identify">识鸟</string>
+    <string name="menu_title_record">记鸟</string>
+    <string name="menu_title_knowledge">科普</string>
+
+
+    <!--menu_add_edit_record.xml-->
+    <string name="action_save">保存</string>
+
+
+    <!--menu_record_item_context.xml-->
+    <string name="context_menu_edit_record">编辑记录</string>
+    <string name="context_menu_delete_record">删除记录</string>
+
+
+    <!--menu_record_sort.xml-->
+    <string name="sort_option_time_desc">按时间倒序</string>
+    <string name="sort_option_time_asc">按时间正序</string>
+    <string name="sort_option_name_asc">按鸟名正序 (A-Z)</string>
+    <string name="sort_option_name_desc">按鸟名逆序 (Z-A)</string>
+    <string name="sort_option_has_photo">有图片的在前</string>
 </resources>

@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="96dp"
-    android:layout_height="96dp"
-    android:layout_marginEnd="8dp">
+    android:layout_width="@dimen/photo_preview_removable_item_size"
+    android:layout_height="@dimen/photo_preview_removable_item_size"
+    android:layout_marginEnd="@dimen/photo_preview_removable_item_margin_end">
 
     <ImageView
         android:id="@+id/iv_photo_preview_item"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scaleType="centerCrop"
-        android:contentDescription="照片预览项"/>
+        android:contentDescription="@string/cd_photo_preview_item"/>
 
     <ImageButton
         android:id="@+id/btn_remove_photo_item"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
+        android:layout_width="@dimen/photo_preview_remove_button_size"
+        android:layout_height="@dimen/photo_preview_remove_button_size"
         android:layout_gravity="top|end"
-        android:layout_margin="4dp"
-        android:background="@drawable/circle_background_with_cross" />
+        android:layout_margin="@dimen/photo_preview_remove_button_margin"
+        android:background="@drawable/circle_background_with_cross"
+        android:contentDescription="@string/cd_remove_photo" />
 </FrameLayout>

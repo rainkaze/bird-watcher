@@ -4,30 +4,30 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F5F5"
+    android:background="@color/app_background_color"
     tools:context=".fragment.HomeFragment">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="8dp">
+        android:padding="@dimen/home_main_padding">
 
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingHorizontal="16dp"
-            android:paddingTop="16dp"
-            android:paddingBottom="8dp">
+            android:paddingHorizontal="@dimen/home_header_padding_horizontal"
+            android:paddingTop="@dimen/home_header_padding_vertical"
+            android:paddingBottom="@dimen/home_main_padding">
 
             <ImageView
                 android:id="@+id/iv_user_avatar"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
+                android:layout_width="@dimen/home_avatar_size"
+                android:layout_height="@dimen/home_avatar_size"
                 android:layout_alignParentStart="true"
                 android:layout_centerVertical="true"
                 android:src="@drawable/ic_user"
-                android:contentDescription="用户头像"
+                android:contentDescription="@string/cd_user_avatar"
                 android:clickable="true"
                 android:focusable="true"
                 android:background="?attr/selectableItemBackgroundBorderless"/>
@@ -38,7 +38,7 @@
                 android:layout_height="wrap_content"
                 android:layout_toEndOf="@id/iv_user_avatar"
                 android:layout_centerVertical="true"
-                android:layout_marginStart="12dp"
+                android:layout_marginStart="@dimen/home_avatar_margin_start"
                 android:orientation="vertical"
                 android:visibility="gone"
                 tools:visibility="visible">
@@ -48,15 +48,15 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textStyle="bold"
-                    android:textSize="16sp"
-                    tools:text="观鸟者"/>
+                    android:textSize="@dimen/text_size_normal"
+                    tools:text="@string/tools_username_sample"/>
 
                 <TextView
                     android:id="@+id/tv_sync_status"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="12sp"
-                    tools:text="上次同步：5分钟前"/>
+                    android:textSize="@dimen/text_size_small"
+                    tools:text="@string/tools_sync_status_sample"/>
             </LinearLayout>
 
         </RelativeLayout>
@@ -64,15 +64,15 @@
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="8dp"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="4dp">
+            android:layout_margin="@dimen/home_main_padding"
+            app:cardCornerRadius="@dimen/home_card_corner_radius"
+            app:cardElevation="@dimen/home_card_elevation">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:padding="16dp">
+                android:padding="@dimen/home_header_padding_horizontal">
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -87,17 +87,17 @@
                         android:layout_height="wrap_content"
                         android:textAppearance="?attr/textAppearanceHeadlineSmall"
                         android:textColor="?attr/colorPrimary"
-                        tools:text="128" />
+                        tools:text="@string/tools_sample_count_128" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="总记录数"
+                        android:text="@string/label_total_records"
                         android:textAppearance="?attr/textAppearanceLabelMedium" />
                 </LinearLayout>
 
                 <View
-                    android:layout_width="1dp"
+                    android:layout_width="@dimen/divider_thickness"
                     android:layout_height="match_parent"
                     android:background="?android:attr/listDivider" />
 
@@ -114,12 +114,12 @@
                         android:layout_height="wrap_content"
                         android:textAppearance="?attr/textAppearanceHeadlineSmall"
                         android:textColor="?attr/colorPrimary"
-                        tools:text="42" />
+                        tools:text="@string/tools_sample_count_42" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="鸟类物种"
+                        android:text="@string/label_unique_species"
                         android:textAppearance="?attr/textAppearanceLabelMedium" />
                 </LinearLayout>
             </LinearLayout>
@@ -129,8 +129,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginHorizontal="8dp"
-            android:layout_marginTop="8dp">
+            android:layout_marginHorizontal="@dimen/home_main_padding"
+            android:layout_marginTop="@dimen/home_main_padding">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_home_add_record"
@@ -138,8 +138,8 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_marginEnd="8dp"
-                android:text="添加记录"
+                android:layout_marginEnd="@dimen/home_main_padding"
+                android:text="@string/action_add_record"
                 app:icon="@drawable/ic_add_fab" />
 
             <com.google.android.material.button.MaterialButton
@@ -147,9 +147,9 @@
                 style="@style/Widget.Material3.Button.ElevatedButton.Icon"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
+                android:layout_marginStart="@dimen/home_main_padding"
                 android:layout_weight="1"
-                android:text="识鸟"
+                android:text="@string/action_identify_bird"
                 app:icon="@drawable/ic_identify" />
         </LinearLayout>
 
@@ -159,9 +159,9 @@
             style="@style/TextAppearance.Material3.TitleMedium"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="20dp"
-            android:text="近期记录"
+            android:layout_marginStart="@dimen/home_header_padding_horizontal"
+            android:layout_marginTop="@dimen/home_title_margin_top"
+            android:text="@string/title_recent_records"
             android:visibility="gone"
             tools:visibility="visible"/>
 
@@ -169,10 +169,10 @@
             android:id="@+id/rv_recent_records"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="@dimen/home_main_padding"
             android:clipToPadding="false"
             android:orientation="horizontal"
-            android:paddingHorizontal="12dp"
+            android:paddingHorizontal="@dimen/home_avatar_margin_start"
             android:visibility="gone"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             tools:itemCount="3"
@@ -183,9 +183,9 @@
             android:id="@+id/card_bird_stats"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="8dp"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="4dp"
+            android:layout_margin="@dimen/home_main_padding"
+            app:cardCornerRadius="@dimen/home_card_corner_radius"
+            app:cardElevation="@dimen/home_card_elevation"
             android:visibility="gone"
             tools:visibility="visible">
 
@@ -193,15 +193,15 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:paddingVertical="16dp">
+                android:paddingVertical="@dimen/home_header_padding_horizontal">
 
                 <TextView
                     style="@style/TextAppearance.Material3.TitleMedium"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginBottom="8dp"
-                    android:text="我的观鸟排行" />
+                    android:layout_marginStart="@dimen/home_header_padding_horizontal"
+                    android:layout_marginBottom="@dimen/home_main_padding"
+                    android:text="@string/title_my_bird_rankings" />
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rv_bird_stats"
@@ -219,8 +219,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:padding="32dp"
-            android:text="还没有任何记录，快去添加你的第一次发现吧！"
+            android:padding="@dimen/home_empty_view_padding"
+            android:text="@string/prompt_no_records_home"
             android:textAppearance="?attr/textAppearanceBodyMedium"
             android:textColor="@color/black"
             android:visibility="gone"

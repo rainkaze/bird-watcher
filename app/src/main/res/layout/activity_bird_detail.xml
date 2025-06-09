@@ -23,7 +23,7 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="16dp">
+        android:padding="@dimen/view_padding_medium">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -34,52 +34,52 @@
                 android:id="@+id/detail_chinese_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="4dp"
+                android:layout_marginBottom="@dimen/spacing_xs"
                 android:textColor="@color/black"
-                android:textSize="24sp"
+                android:textSize="@dimen/font_size_xl"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/detail_scientific_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp"
-                android:textSize="18sp"
+                android:layout_marginBottom="@dimen/spacing_xl"
+                android:textSize="@dimen/font_size_lg"
                 android:textStyle="italic" />
 
             <TextView
                 android:id="@+id/detail_order"
                 style="@style/DetailTextStyle"
-                android:layout_marginBottom="8dp" />
+                android:layout_marginBottom="@dimen/spacing_s" />
 
             <TextView
                 android:id="@+id/detail_family"
                 style="@style/DetailTextStyle"
-                android:layout_marginBottom="8dp" />
+                android:layout_marginBottom="@dimen/spacing_s" />
 
             <TextView
                 android:id="@+id/detail_iucn"
                 style="@style/DetailTextStyle"
-                android:layout_marginBottom="8dp" />
+                android:layout_marginBottom="@dimen/spacing_s" />
 
             <TextView
                 android:id="@+id/detail_protection"
                 style="@style/DetailTextStyle"
-                android:layout_marginBottom="16dp" />
+                android:layout_marginBottom="@dimen/spacing_m" />
 
             <TextView
                 android:id="@+id/detail_url"
                 style="@style/DetailTextStyle"
-                android:layout_marginBottom="16dp"
+                android:layout_marginBottom="@dimen/spacing_m"
                 android:autoLink="web" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:text="鸟类详情"
+                android:layout_marginBottom="@dimen/spacing_s"
+                android:text="@string/header_bird_description"
                 android:textColor="@color/black"
-                android:textSize="18sp"
+                android:textSize="@dimen/font_size_lg"
                 android:textStyle="bold" />
 
             <TextView
@@ -87,7 +87,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:lineSpacingMultiplier="1.3"
-                android:textSize="16sp" />
+                android:textSize="@dimen/font_size_m" />
         </LinearLayout>
     </ScrollView>
 

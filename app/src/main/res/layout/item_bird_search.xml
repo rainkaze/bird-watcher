@@ -5,36 +5,34 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="4dp"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="2dp"
-    app:strokeColor="#11000000"
-    app:strokeWidth="1dp">
+    android:layout_marginBottom="@dimen/item_stat_margin_vertical"
+    app:cardCornerRadius="@dimen/item_stat_corner_radius"
+    app:cardElevation="@dimen/item_stat_elevation"
+    app:strokeColor="@color/item_stat_card_stroke_color"
+    app:strokeWidth="@dimen/item_stat_stroke_width">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="12dp"
+        android:padding="@dimen/item_stat_padding"
         android:gravity="center_vertical"
-        android:minHeight="64dp">
+        android:minHeight="@dimen/item_stat_min_height">
 
-        <!-- 鸟类图标 -->
         <ImageView
             android:id="@+id/iv_bird_icon"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:src="@drawable/ic_bird_default"
+            android:layout_width="@dimen/item_stat_icon_size"
+            android:layout_height="@dimen/item_stat_icon_size"
+            android:src="@drawable/ic_bird"
             android:contentDescription="@string/bird_icon"
-            android:padding="4dp"
+            android:padding="@dimen/item_stat_margin_vertical"
             app:tint="@color/bird_icon_tint"/>
 
-        <!-- 鸟类信息 -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_marginStart="12dp"
+            android:layout_marginStart="@dimen/item_stat_padding"
             android:orientation="vertical">
 
             <TextView
@@ -42,38 +40,37 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textAppearance="?attr/textAppearanceBodyMedium"
-                android:textColor="#FF000000"
-                android:textSize="16sp"
+                android:textColor="@color/item_stat_text_primary"
+                android:textSize="@dimen/item_stat_font_size_primary"
                 android:ellipsize="end"
                 android:maxLines="1"
-                tools:text="红腹锦鸡"/>
+                tools:text="@string/tools_bird_stat_name"/>
 
             <TextView
                 android:id="@+id/tv_popularity"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
+                android:layout_marginTop="@dimen/item_stat_margin_vertical"
                 android:textAppearance="?attr/textAppearanceBodySmall"
-                android:textSize="14sp"
-                android:textColor="#FF666666"
-                tools:text="人气值: 95%"/>
+                android:textSize="@dimen/item_stat_font_size_secondary"
+                android:textColor="@color/item_stat_text_secondary"
+                tools:text="@string/tools_bird_stat_popularity"/>
         </LinearLayout>
 
-        <!-- 定位按钮 - 修复警告 -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_locate"
             style="@style/Widget.MaterialComponents.Button.Icon"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:minWidth="48dp"
-            android:minHeight="48dp"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"
+            android:layout_width="@dimen/item_stat_icon_size"
+            android:layout_height="@dimen/item_stat_icon_size"
+            android:minWidth="@dimen/item_stat_icon_size"
+            android:minHeight="@dimen/item_stat_icon_size"
+            android:insetTop="@dimen/spacing_none"
+            android:insetBottom="@dimen/spacing_none"
             app:icon="@drawable/ic_location_pin"
             app:iconTint="@color/colorPrimary"
-            app:iconSize="24dp"
+            app:iconSize="@dimen/item_stat_button_icon_size"
             app:iconGravity="textStart"
-            app:iconPadding="0dp"
+            app:iconPadding="@dimen/spacing_none"
             android:background="?selectableItemBackgroundBorderless"
             android:contentDescription="@string/locate_bird"
             android:focusable="true"/>

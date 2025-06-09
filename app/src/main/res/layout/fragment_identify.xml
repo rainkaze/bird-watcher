@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".fragment.IdentifyFragment"
-    android:padding="16dp">
+    android:padding="@dimen/identify_page_padding">
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/card_take_photo"
@@ -14,9 +14,9 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:cardElevation="4dp"
-        app:cardCornerRadius="8dp"
-        android:layout_marginBottom="16dp"
+        app:cardElevation="@dimen/identify_card_elevation"
+        app:cardCornerRadius="@dimen/identify_card_corner_radius"
+        android:layout_marginBottom="@dimen/identify_card_vertical_margin"
         android:clickable="true"
         android:focusable="true">
 
@@ -24,18 +24,20 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:padding="16dp"
+            android:padding="@dimen/identify_card_content_padding"
             android:gravity="center_vertical">
 
             <ImageView
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:src="@drawable/ic_camera" /> <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="拍照识鸟"
-            android:textSize="18sp"
-            android:layout_marginStart="16dp"/>
+                android:layout_width="@dimen/identify_icon_size"
+                android:layout_height="@dimen/identify_icon_size"
+                android:src="@drawable/ic_camera" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/identify_by_camera"
+                android:textSize="@dimen/identify_card_text_size"
+                android:layout_marginStart="@dimen/identify_card_content_padding"/>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
@@ -46,10 +48,10 @@
         app:layout_constraintTop_toBottomOf="@id/card_take_photo"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:cardElevation="4dp"
-        app:cardCornerRadius="8dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="16dp"
+        app:cardElevation="@dimen/identify_card_elevation"
+        app:cardCornerRadius="@dimen/identify_card_corner_radius"
+        android:layout_marginTop="@dimen/identify_card_vertical_margin"
+        android:layout_marginBottom="@dimen/identify_card_vertical_margin"
         android:clickable="true"
         android:focusable="true">
 
@@ -57,18 +59,20 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:padding="16dp"
+            android:padding="@dimen/identify_card_content_padding"
             android:gravity="center_vertical">
 
             <ImageView
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:src="@drawable/ic_album" /> <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="相册识鸟"
-            android:textSize="18sp"
-            android:layout_marginStart="16dp"/>
+                android:layout_width="@dimen/identify_icon_size"
+                android:layout_height="@dimen/identify_icon_size"
+                android:src="@drawable/ic_album" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/identify_by_album"
+                android:textSize="@dimen/identify_card_text_size"
+                android:layout_marginStart="@dimen/identify_card_content_padding"/>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
@@ -79,9 +83,9 @@
         app:layout_constraintTop_toBottomOf="@id/card_choose_album"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:cardElevation="4dp"
-        app:cardCornerRadius="8dp"
-        android:layout_marginTop="16dp"
+        app:cardElevation="@dimen/identify_card_elevation"
+        app:cardCornerRadius="@dimen/identify_card_corner_radius"
+        android:layout_marginTop="@dimen/identify_card_vertical_margin"
         android:clickable="true"
         android:visibility="gone"
         android:focusable="true">
@@ -90,18 +94,20 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:padding="16dp"
+            android:padding="@dimen/identify_card_content_padding"
             android:gravity="center_vertical">
 
             <ImageView
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:src="@drawable/ic_mic" /> <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="听音识鸟"
-            android:textSize="18sp"
-            android:layout_marginStart="16dp"/>
+                android:layout_width="@dimen/identify_icon_size"
+                android:layout_height="@dimen/identify_icon_size"
+                android:src="@drawable/ic_mic" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/identify_by_sound"
+                android:textSize="@dimen/identify_card_text_size"
+                android:layout_marginStart="@dimen/identify_card_content_padding"/>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 

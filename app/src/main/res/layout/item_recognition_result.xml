@@ -4,45 +4,54 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="12dp"
-    android:background="?android:attr/selectableItemBackground" > <TextView
-    android:id="@+id/text_bird_name"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:textSize="18sp"
-    android:textStyle="bold"
-    android:textColor="?android:attr/textColorPrimary"
-    tools:text="叉角羚"/>
+    android:padding="@dimen/item_recognition_padding"
+    android:background="?android:attr/selectableItemBackground" >
+
+    <TextView
+        android:id="@+id/text_bird_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/item_recognition_text_size_primary"
+        android:textStyle="bold"
+        android:textColor="?android:attr/textColorPrimary"
+        tools:text="@string/tools_recognition_name_sample"/>
 
     <TextView
         android:id="@+id/text_confidence_score"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="14sp"
+        android:textSize="@dimen/item_recognition_text_size_secondary"
         android:textColor="?android:attr/textColorSecondary"
-        android:layout_marginTop="4dp"
-        tools:text="置信度: 0.99"/>
+        android:layout_marginTop="@dimen/item_recognition_spacing_small"
+        tools:text="@string/tools_recognition_confidence_sample"/>
 
     <TextView
         android:id="@+id/text_bird_description"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="14sp"
+        android:textSize="@dimen/item_recognition_text_size_secondary"
         android:textColor="?android:attr/textColorSecondary"
-        android:layout_marginTop="8dp"
-        android:maxLines="3" android:ellipsize="end" android:visibility="gone" tools:text="叉角羚(学名：Antilocapra americana)：在角的中部角鞘有向前伸的分枝，故名。体型中等，体长1-1.5米..."
+        android:layout_marginTop="@dimen/item_recognition_spacing_medium"
+        android:maxLines="3"
+        android:ellipsize="end"
+        android:visibility="gone"
+        tools:text="@string/tools_recognition_description_sample"
         tools:visibility="visible"/>
 
     <TextView
         android:id="@+id/text_baike_link"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/view_on_baike" android:textSize="14sp"
-        android:textColor="?attr/colorPrimary" android:textStyle="bold"
-        android:paddingTop="8dp"
-        android:paddingBottom="4dp"
-        android:visibility="gone" android:clickable="true"
+        android:text="@string/view_on_baike"
+        android:textSize="@dimen/item_recognition_text_size_secondary"
+        android:textColor="?attr/colorPrimary"
+        android:textStyle="bold"
+        android:paddingTop="@dimen/item_recognition_spacing_medium"
+        android:paddingBottom="@dimen/item_recognition_spacing_small"
+        android:visibility="gone"
+        android:clickable="true"
         android:focusable="true"
-        android:background="?android:attr/selectableItemBackgroundBorderless" tools:visibility="visible"/>
+        android:background="?android:attr/selectableItemBackgroundBorderless"
+        tools:visibility="visible"/>
 
 </LinearLayout>

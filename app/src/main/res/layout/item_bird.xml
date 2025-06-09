@@ -3,34 +3,34 @@
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginStart="8dp"
-    android:layout_marginTop="4dp"
-    android:layout_marginEnd="8dp"
-    android:layout_marginBottom="4dp"
-    card_view:cardCornerRadius="4dp">
+    android:layout_marginStart="@dimen/item_bird_margin_horizontal"
+    android:layout_marginTop="@dimen/item_bird_margin_vertical"
+    android:layout_marginEnd="@dimen/item_bird_margin_horizontal"
+    android:layout_marginBottom="@dimen/item_bird_margin_vertical"
+    card_view:cardCornerRadius="@dimen/item_bird_corner_radius">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp"
+        android:padding="@dimen/item_bird_content_padding"
         android:background="?android:attr/selectableItemBackground">
 
         <TextView
             android:id="@+id/chinese_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="18sp"
+            android:textSize="@dimen/item_bird_primary_text_size"
             android:textStyle="bold"
-            android:textColor="@android:color/black"/>
+            android:textColor="@color/item_text_primary_color"/>
 
         <TextView
             android:id="@+id/scientific_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="14sp"
+            android:textSize="@dimen/item_bird_secondary_text_size"
             android:textStyle="italic"
-            android:textColor="@android:color/darker_gray"/>
+            android:textColor="@color/item_text_secondary_color"/>
 
     </LinearLayout>
 </androidx.cardview.widget.CardView>

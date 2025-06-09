@@ -4,10 +4,10 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:paddingStart="16dp"
-    android:paddingTop="12dp"
-    android:paddingEnd="16dp"
-    android:paddingBottom="12dp"
+    android:paddingStart="@dimen/item_poi_padding_horizontal"
+    android:paddingTop="@dimen/item_poi_padding_vertical"
+    android:paddingEnd="@dimen/item_poi_padding_horizontal"
+    android:paddingBottom="@dimen/item_poi_padding_vertical"
     android:background="?android:attr/selectableItemBackground"
     android:clickable="true"
     android:focusable="true">
@@ -16,16 +16,16 @@
         android:id="@+id/tv_poi_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="16sp"
+        android:textSize="@dimen/item_poi_text_size_primary"
         android:textColor="?android:attr/textColorPrimary"
-        tools:text="天安门" />
+        tools:text="@string/tools_poi_name_sample" />
 
     <TextView
         android:id="@+id/tv_poi_address"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:textSize="14sp"
+        android:layout_marginTop="@dimen/item_poi_spacing_vertical"
+        android:textSize="@dimen/item_poi_text_size_secondary"
         android:textColor="?android:attr/textColorSecondary"
-        tools:text="北京市东城区" />
+        tools:text="@string/tools_poi_address_sample" />
 </LinearLayout>
